@@ -690,8 +690,7 @@
             
             console.log(`DEBUG: findRelevantDocuments for "${query}" - Found: ${uniqueRelevantDocs.length} docs (before slice)`);
             return uniqueRelevantDocs.slice(0, limit);
-        }
-
+            }
             // 2. Pencarian keyword yang lebih fleksibel dengan scoring
             loadedDatabase.forEach(doc => {
                 // --- PERUBAHAN --- Filter berdasarkan pilihan checklist
