@@ -617,45 +617,33 @@
             const lowerCaseQuery = query.toLowerCase().trim();
             const { searchQuran, searchHadith } = options;
 
-            // Daftar kata umum yang akan diabaikan dalam pencarian keyword
             const stopWords = new Set(['cara', 'dan', 'yang', 'dari', 'tentang', 'mengenai', 'untuk', 'adalah', 'ini', 'itu', 'apa', 'siapa', 'kapan', 'dimana', 'bagaimana', 'menurut', 'pandangan', 'dalam', 'hukumnya']);
             
             const queryWords = lowerCaseQuery.split(/\s+/).filter(word => word.length > 2 && !stopWords.has(word));
 
             loadedDatabase.forEach(doc => {
-                // Filter berdasarkan pilihan checklist
                 if (!searchQuran && doc.type === 'Quran') return;
                 if (!searchHadith && doc.type === 'Hadith') return;
 
                 let relevanceScore = 0;
-                let contentToSearch = ((doc.translation || '') + ' ' + (doc.text || '')).toLowerCase();
+                const contentToSearch = ((doc.translation || '') + ' ' + (doc.text || '')).toLowerCase();
 
-                // === STRATEGI #1: Pencarian Frasa Utuh (Skor Tertinggi) ===
-                if (contentToSearch.includes(lowerCaseQuery)) {
+                // STRATEGI #1: Pencarian Frasa Utuh (Skor Tertinggi)
+                if (lowerCaseQuery.length > 3 && contentToSearch.includes(lowerCaseQuery)) {
                     relevanceScore += 1000;
                 }
 
-                // === STRATEGI #2: Semua Kata Kunci Penting Ada (Skor Tinggi) ===
+                // STRATEGI #2: Semua Kata Kunci Penting Ada (Skor Tinggi)
                 if (queryWords.length > 1) {
                     const allWordsFound = queryWords.every(word => contentToSearch.includes(word));
                     if (allWordsFound) {
                         relevanceScore += 100;
                     }
                 }
-
-                // === STRATEGI #3: Pencarian Kata per Kata (Skor Dasar) ===
-                queryWords.forEach(word => {
-                    if (contentToSearch.includes(word)) {
-                        relevanceScore++;
-                    }
-                });
                 
-                // Tambahan skor jika kueri cocok dengan nama Sahabat (bisa diperluas)
-                if (['abu bakar', 'umar bin khattab', 'utsman bin affan', 'ali bin abi thalib', 'fatimah', 'aisyah'].includes(lowerCaseQuery)) {
-                    if (relevanceScore > 1000) relevanceScore += 500;
-                }
-
-                if (relevanceScore > 0) {
+                // HANYA DOKUMEN BERKUALITAS TINGGI YANG AKAN DIPROSES
+                if (relevanceScore >= 100) {
+                    // Cek duplikat sebelum menambahkan
                     if (!allFoundDocs.some(found => found.doc.id === doc.id)) {
                          allFoundDocs.push({ doc, score: relevanceScore });
                     }
