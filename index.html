@@ -983,7 +983,16 @@ image: function() {
                             if (!response.ok) {
                                 throw new Error(`Gagal mengunduh: Server merespons dengan status ${response.status}`);
                             }
-                            const data = await response.json(); // Langsung parse sebagai JSON
+                            // 1. Ambil data sebagai teks mentah dulu, bukan langsung .json()
+                            const rawText = await response.text();
+
+    // 2. Bersihkan teks dari spasi atau karakter tak terlihat di awal/akhir (ini kuncinya)
+                            const cleanText = rawText.trim();
+
+    // 3. Baru parse teks yang sudah bersih
+                            const data = JSON.parse(cleanText);
+    
+    loadedDatabase = data;
                             
                             // Langsung masukkan data ke variabel global
                             loadedDatabase = data;
