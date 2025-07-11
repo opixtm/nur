@@ -583,7 +583,7 @@
 
             Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
 
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
 
             try {
                 const resultData = await callGeminiAPI(payload);
@@ -620,7 +620,7 @@
             Sebutkan secara eksplisit jika jawaban Anda berdasarkan ijtihad atau qiyas dan bahwa ini memerlukan verifikasi lebih lanjut oleh ahli atau ulama.
             Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects, bisa kosong */], "follow_up_questions": [string, string, string]}`;
 
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
 
             try {
                 const resultData = await callGeminiAPI(payload);
@@ -790,7 +790,7 @@
                     showLoading('Mengolah gambar dan menggali hikmah...');
                     document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
                     const prompt = `${pilar2PromptInstruction} Berdasarkan prinsip di atas, lihat gambar ini, deskripsikan, dan gali hikmahnya. Berikan jawaban JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
-                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }]};
+                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
                     try {
                         const resultData = await callGeminiAPI(payload);
                         renderImageAnalysis(resultData, `data:${mimeType};base64,${base64Data}`);
