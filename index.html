@@ -631,52 +631,66 @@
         }
 
         // --- PERUBAHAN --- Fungsi findRelevantDocuments dimodifikasi
+        // --- GANTI FUNGSI LAMA DENGAN YANG BARU INI ---
         async function findRelevantDocuments(query, limit = 15, options = { searchQuran: true, searchHadith: true }) {
             const allFoundDocs = []; 
-            const lowerCaseQuery = query.toLowerCase();
-            const queryWords = lowerCaseQuery.split(/\s+/).filter(word => word.length > 2 && !['cara', 'dan', 'yang', 'dari', 'tentang', 'mengenai', 'untuk', 'adalah', 'ini', 'itu'].includes(word));
-            
+            const lowerCaseQuery = query.toLowerCase().trim();
             const { searchQuran, searchHadith } = options;
 
-            // 1. Pencarian spesifik berdasarkan referensi
-            const quranRefRegex = /qs\.?\s*([a-zA-Z\s\u0600-\u06FF]+):?\s*(\d+)/i; 
-            const hadithRefRegex = /(hr\.?|riwayat)\s*([a-zA-Z\s\u0600-\u06FF]+)\s*(no\.?\s*(\d+))?/i; 
+            // Daftar kata umum yang akan diabaikan dalam pencarian keyword
+            const stopWords = new Set(['cara', 'dan', 'yang', 'dari', 'tentang', 'mengenai', 'untuk', 'adalah', 'ini', 'itu', 'apa', 'siapa', 'kapan', 'dimana', 'bagaimana', 'menurut', 'pandangan', 'dalam', 'hukumnya']);
+            
+            const queryWords = lowerCaseQuery.split(/\s+/).filter(word => word.length > 2 && !stopWords.has(word));
 
-            const matchQuranRef = lowerCaseQuery.match(quranRefRegex);
-            const matchHadithRef = lowerCaseQuery.match(hadithRefRegex);
+            loadedDatabase.forEach(doc => {
+                // Filter berdasarkan pilihan checklist
+                if (!searchQuran && doc.type === 'Quran') return;
+                if (!searchHadith && doc.type === 'Hadith') return;
 
-            if (matchQuranRef && searchQuran) {
-                const surahNameRaw = matchQuranRef[1];
-                const ayahNumber = matchQuranRef[2];
-                const surahNameClean = surahNameRaw.toLowerCase().replace(/[\s\-\.]/g, ''); 
+                let relevanceScore = 0;
+                let contentToSearch = ((doc.translation || '') + ' ' + (doc.text || '')).toLowerCase();
 
-                const exactMatch = loadedDatabase.find(doc => {
-                    if (doc.type === 'Quran' && doc.source) {
-                        const docSourceClean = doc.source.toLowerCase().replace(/[\s\-\.]/g, '');
-                        const isSurahMatch = docSourceClean.includes(surahNameClean);
-                        const isAyahMatch = doc.source.includes(`: ${ayahNumber}`);
-                        return isSurahMatch && isAyahMatch;
-                    }
-                    return false;
-                });
-                if (exactMatch) {
-                    allFoundDocs.push({ doc: exactMatch, score: 10000 });
+                // === STRATEGI #1: Pencarian Frasa Utuh (Skor Tertinggi) ===
+                if (contentToSearch.includes(lowerCaseQuery)) {
+                    relevanceScore += 1000; // Beri skor sangat tinggi untuk kecocokan frasa penuh
                 }
-            } else if (matchHadithRef && searchHadith) {
-                const hadithSource = matchHadithRef[2]; 
-                const hadithNumber = matchHadithRef[4]; 
-                const exactMatch = loadedDatabase.find(doc => {
-                    if (doc.type === 'Hadith' && doc.source) {
-                        const isSourceMatch = doc.source.toLowerCase().includes(hadithSource.toLowerCase());
-                        const isNumberMatch = hadithNumber ? doc.source.includes(`no. ${hadithNumber}`) : true;
-                        return isSourceMatch && isNumberMatch;
+
+                // === STRATEGI #2: Semua Kata Kunci Penting Ada (Skor Tinggi) ===
+                if (queryWords.length > 1) {
+                    const allWordsFound = queryWords.every(word => contentToSearch.includes(word));
+                    if (allWordsFound) {
+                        relevanceScore += 100; // Beri skor tinggi jika semua kata kunci ada
                     }
-                    return false;
-                });
-                if (exactMatch) {
-                    allFoundDocs.push({ doc: exactMatch, score: 10000 });
                 }
-            }
+
+                // === STRATEGI #3: Pencarian Kata per Kata (Skor Dasar) ===
+                queryWords.forEach(word => {
+                    if (contentToSearch.includes(word)) {
+                        relevanceScore++; // Skor dasar untuk setiap kata yang cocok
+                    }
+                });
+                
+                // Tambahan skor jika kueri cocok dengan nama Sahabat (bisa diperluas)
+                if (['abu bakar', 'umar bin khattab', 'utsman bin affan', 'ali bin abi thalib', 'fatimah', 'aisyah'].includes(lowerCaseQuery)) {
+                    if (relevanceScore > 1000) relevanceScore += 500;
+                }
+
+                if (relevanceScore > 0) {
+                    // Cek agar tidak ada duplikat dokumen
+                    if (!allFoundDocs.some(found => found.doc.id === doc.id)) {
+                         allFoundDocs.push({ doc, score: relevanceScore });
+                    }
+                }
+            });
+
+            // Urutkan berdasarkan skor tertinggi
+            allFoundDocs.sort((a, b) => b.score - a.score);
+
+            const uniqueRelevantDocs = allFoundDocs.map(item => item.doc);
+            
+            console.log(`DEBUG: findRelevantDocuments for "${query}" - Found: ${uniqueRelevantDocs.length} docs (before slice)`);
+            return uniqueRelevantDocs.slice(0, limit);
+        }
 
             // 2. Pencarian keyword yang lebih fleksibel dengan scoring
             loadedDatabase.forEach(doc => {
