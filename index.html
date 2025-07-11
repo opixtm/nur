@@ -486,7 +486,7 @@
                                     </div>
                                     <div id="exportable-content">
                                         <p class="text-gray-300 mb-6 whitespace-pre-wrap">${data.summary}</p>
-                                        ${referensiHtml}
+                                        <div id="references-wrapper">${referensiHtml}</div>
                                     </div>
                                     ${madhhabHtml} 
                                     ${followUpHtml}
@@ -523,111 +523,93 @@
         async function runQuickAnswerRAG(query) {
             const resultsContainer = document.getElementById('results-container');
             if (!resultsContainer) return;
+            
             showLoading('Mencari ilmu dan rujukan lengkap dari Al-Qur\'an dan Hadis...', 'results-container');
             resultsContainer.scrollIntoView({ behavior: 'smooth' });
 
-            const searchQuran = document.getElementById('filter-quran')?.checked ?? true;
-            const searchHadith = document.getElementById('filter-hadith')?.checked ?? true;
+            // Menjalankan proses berat di dalam setTimeout agar UI tidak freeze
+            setTimeout(async () => {
+                const searchQuran = document.getElementById('filter-quran')?.checked ?? true;
+                const searchHadith = document.getElementById('filter-hadith')?.checked ?? true;
 
-            if (!searchQuran && !searchHadith) {
-                showError("Anda harus memilih minimal satu sumber rujukan (Al-Qur'an atau Hadis) untuk melakukan pencarian.");
-                return;
-            }
-
-            const relevantDocuments = await findRelevantDocuments(query, 15, { searchQuran, searchHadith });
-            
-            let contextText = "";
-            let referenceObjects = [];
-
-            if (relevantDocuments.length > 0) {
-                contextText += "BERIKUT ADALAH RUJUKAN PRIMER (AL QUR'AN/HADIS) YANG RELEVAN DARI DATABASE LOKAL. GUNAKAN INI SEBAGAI DASAR UTAMA JAWABAN ANDA:\n\n";
-                relevantDocuments.forEach(doc => {
-                    if (doc.type === 'Quran') {
-                        contextText += `[Qur'an] ${doc.source}: "${doc.translation}"\n`;
-                        referenceObjects.push({
-                            type: "Quran",
-                            reference_text: doc.source,
-                            text: doc.text, 
-                            translation: doc.translation,
-                            tafsir: doc.tafsir || { source: "Tidak tersedia", content: "Tidak ada tafsir spesifik untuk ayat ini dalam database lokal." },
-                            asbabun_nuzul: doc.asbabun_nuzul || { source: "Tidak tersedia", content: "Tidak ada asbabun nuzul spesifik untuk ayat ini dalam database lokal." }
-                        });
-                    } else if (doc.type === 'Hadith') {
-                        contextText += `[Hadis] ${doc.source}: "${doc.translation}" (Grade: ${doc.grade || 'Tidak diketahui'})\n`;
-                        referenceObjects.push({
-                            type: "Hadith",
-                            text_arabic: doc.text, 
-                            text_translation: doc.translation, 
-                            grade: doc.grade || "Tidak diketahui",
-                            source: doc.source
-                        });
-                    }
-                });
-                contextText += "\n";
-            } else {
-                contextText += "TIDAK DITEMUKAN RUJUKAN LANGSUNG DARI AL-QUR'AN ATAU HADIS DALAM DATABASE LOKAL YANG SANGAT RELEVAN UNTUK KUERIMU. JAWABAN AKAN LEBIH BERSIFAT GENERATIF BERDASARKAN PEMAHAMAN AI. INGATLAH BAHWA DALIL PRIMER ADALAH FONDASI ILMU.\n\n";
-            }
-
-            const prompt = `${pilar2PromptInstruction}
-
-            **TOPIK ANALISIS:** "${query}"
-
-            **KONTEKS RUJUKAN PRIMER DARI DATABASE LOKAL (AL-QUR'AN & HADIS):**
-            ${contextText}
-
-            **INSTRUKSI JAWABAN:**
-            Sebagai seorang cendekiawan Muslim, analisis dan jawablah topik "${query}" berdasarkan **SEPENUHNYA** dari 'KONTEKS RUJUKAN PRIMER' yang diberikan di atas.
-            Jika rujukan primer yang diberikan TIDAK CUKUP untuk menjawab pertanyaan, nyatakan demikian dan jelaskan bahwa analisis selanjutnya bersifat ijtihad, qiyas, atau generatif dan butuh verifikasi lebih lanjut oleh ahli.
-            Prioritaskan penyebutan rujukan Al-Qur'an terlebih dahulu, diikuti Hadis.
-            Pastikan properti 'references' dalam JSON berisi **SEMUA** rujukan yang Anda gunakan dari 'KONTEKS RUJUKAN PRIMER'.
-
-            Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
-
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
-
-            try {
-                const resultData = await callGeminiAPI(payload);
-                
-                if (referenceObjects.length > 0) {
-                    resultData.references = referenceObjects;
-                    renderSearchResults(resultData, 'verified');
-                } else {
-                    const generativePrompt = `${pilar2PromptInstruction}
-                    Anda diminta untuk menganalisis topik: "${query}".
-                    **PENTING:** Karena tidak ditemukan rujukan langsung dari Al-Qur'an atau Hadis dalam database lokal, jawaban ini adalah analisis generatif oleh AI.
-                    Sebutkan secara eksplisit jika jawaban Anda berdasarkan ijtihad atau qiyas dan bahwa ini memerlukan verifikasi lebih lanjut oleh ahli atau ulama.
-                    Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [], "follow_up_questions": [string, string, string]}`;
-                    
-                    const generativePayload = { contents: [{ parts: [{ text: generativePrompt }] }] };
-                    const generativeResult = await callGeminiAPI(generativePayload);
-                    renderSearchResults(generativeResult, 'generative');
+                if (!searchQuran && !searchHadith) {
+                    showError("Anda harus memilih minimal satu sumber rujukan (Al-Qur'an atau Hadis) untuk melakukan pencarian.");
+                    return;
                 }
+
+                const relevantDocuments = await findRelevantDocuments(query, 15, { searchQuran, searchHadith });
                 
-            } catch (error) {
-                showError(error.message, 'results-container');
-            }
-        }
+                let contextText = "";
+                let referenceObjects = [];
 
-        async function runGenerativeSearch(query) {
-            const resultsContainer = document.getElementById('results-container');
-            if (!resultsContainer) return;
-            showLoading('Melakukan analisis generatif (membutuhkan verifikasi ahli)...', 'results-container');
-            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+                if (relevantDocuments.length > 0) {
+                    contextText += "BERIKUT ADALAH RUJUKAN PRIMER (AL QUR'AN/HADIS) YANG RELEVAN DARI DATABASE LOKAL. GUNAKAN INI SEBAGAI DASAR UTAMA JAWABAN ANDA:\n\n";
+                    relevantDocuments.forEach(doc => {
+                        if (doc.type === 'Quran') {
+                            contextText += `[Qur'an] ${doc.source}: "${doc.translation}"\n`;
+                            referenceObjects.push({
+                                type: "Quran",
+                                reference_text: doc.source,
+                                text: doc.text, 
+                                translation: doc.translation,
+                                tafsir: doc.tafsir || { source: "Tidak tersedia", content: "Tidak ada tafsir spesifik untuk ayat ini dalam database lokal." },
+                                asbabun_nuzul: doc.asbabun_nuzul || { source: "Tidak tersedia", content: "Tidak ada asbabun nuzul spesifik untuk ayat ini dalam database lokal." }
+                            });
+                        } else if (doc.type === 'Hadith') {
+                            contextText += `[Hadis] ${doc.source}: "${doc.translation}" (Grade: ${doc.grade || 'Tidak diketahui'})\n`;
+                            referenceObjects.push({
+                                type: "Hadith",
+                                text_arabic: doc.text, 
+                                text_translation: doc.translation, 
+                                grade: doc.grade || "Tidak diketahui",
+                                source: doc.source
+                            });
+                        }
+                    });
+                    contextText += "\n";
+                } else {
+                    contextText += "TIDAK DITEMUKAN RUJUKAN LANGSUNG DARI AL-QUR'AN ATAU HADIS DALAM DATABASE LOKAL YANG SANGAT RELEVAN UNTUK KUERIMU. JAWABAN AKAN LEBIH BERSIFAT GENERATIF BERDASARKAN PEMAHAMAN AI. INGATLAH BAHWA DALIL PRIMER ADALAH FONDASI ILMU.\n\n";
+                }
 
-            const prompt = `${pilar2PromptInstruction}
-            Anda diminta untuk menganalisis topik: "${query}".
-            **PENTING:** Karena topik ini kemungkinan memerlukan ijtihad, qiyas, atau pendapat umum ulama yang tidak selalu bersumber langsung dari Al-Qur'an atau Hadis yang terindeks secara spesifik, maka jawaban Anda adalah analisis generatif oleh AI.
-            Sebutkan secara eksplisit jika jawaban Anda berdasarkan ijtihad atau qiyas dan bahwa ini memerlukan verifikasi lebih lanjut oleh ahli atau ulama.
-            Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects, bisa kosong */], "follow_up_questions": [string, string, string]}`;
+                const prompt = `${pilar2PromptInstruction}
 
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+                **TOPIK ANALISIS:** "${query}"
 
-            try {
-                const resultData = await callGeminiAPI(payload);
-                renderSearchResults(resultData, 'generative'); 
-            } catch (error) {
-                showError(error.message, 'results-container');
-            }
+                **KONTEKS RUJUKAN PRIMER DARI DATABASE LOKAL (AL-QUR'AN & HADIS):**
+                ${contextText}
+
+                **INSTRUKSI JAWABAN:**
+                Sebagai seorang cendekiawan Muslim, analisis dan jawablah topik "${query}" berdasarkan **SEPENUHNYA** dari 'KONTEKS RUJUKAN PRIMER' yang diberikan di atas.
+                Jika rujukan primer yang diberikan TIDAK CUKUP untuk menjawab pertanyaan, nyatakan demikian dan jelaskan bahwa analisis selanjutnya bersifat ijtihad, qiyas, atau generatif dan butuh verifikasi lebih lanjut oleh ahli.
+                Prioritaskan penyebutan rujukan Al-Qur'an terlebih dahulu, diikuti Hadis.
+                Pastikan properti 'references' dalam JSON berisi **SEMUA** rujukan yang Anda gunakan dari 'KONTEKS RUJUKAN PRIMER'.
+
+                Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
+
+                const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+
+                try {
+                    const resultData = await callGeminiAPI(payload);
+                    
+                    if (referenceObjects.length > 0) {
+                        resultData.references = referenceObjects;
+                        renderSearchResults(resultData, 'verified');
+                    } else {
+                        const generativePrompt = `${pilar2PromptInstruction}
+                        Anda diminta untuk menganalisis topik: "${query}".
+                        **PENTING:** Karena tidak ditemukan rujukan langsung dari Al-Qur'an atau Hadis dalam database lokal, jawaban ini adalah analisis generatif oleh AI.
+                        Sebutkan secara eksplisit jika jawaban Anda berdasarkan ijtihad atau qiyas dan bahwa ini memerlukan verifikasi lebih lanjut oleh ahli atau ulama.
+                        Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [], "follow_up_questions": [string, string, string]}`;
+                        
+                        const generativePayload = { contents: [{ parts: [{ text: generativePrompt }] }], generationConfig: { responseMimeType: "application/json" } };
+                        const generativeResult = await callGeminiAPI(generativePayload);
+                        renderSearchResults(generativeResult, 'generative');
+                    }
+                    
+                } catch (error) {
+                    showError(error.message, 'results-container');
+                }
+            }, 0);
         }
         // --- FUNGSI PENCARIAN CERDAS (VERSI BARU) ---
         async function findRelevantDocuments(query, limit = 15, options = { searchQuran: true, searchHadith: true }) {
@@ -1018,11 +1000,10 @@
                         } else if (direction === 'next') {
                             currentReferencePage++;
                         }
-                        const referensiSection = resultsContainer.querySelector('#exportable-content');
-                        if (referensiSection) {
-                            const referensiHtml = renderReferensi(currentReferences);
-                            const existingRefContainer = referensiSection.querySelector('.space-y-4, .mt-8');
-                            if(existingRefContainer) existingRefContainer.innerHTML = referensiHtml;
+                        
+                        const wrapper = document.getElementById('references-wrapper');
+                        if (wrapper) {
+                            wrapper.innerHTML = renderReferensi(currentReferences);
                         }
                         return;
                     }
