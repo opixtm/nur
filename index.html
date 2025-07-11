@@ -183,7 +183,9 @@
         async function loadDatabase(file) {
             try {
                 const fileContent = await file.text();
-                loadedDatabase = JSON.parse(fileContent);
+                // Membersihkan teks dari karakter tak terlihat (BOM) sebelum parsing
+                const cleanText = fileContent.trim();
+                loadedDatabase = JSON.parse(cleanText);
                 console.log('Database Al-Qur\'an & Hadis berhasil dimuat!', loadedDatabase.length, 'entri.');
             } catch (error) {
                 console.error('Error loading or parsing database:', error);
@@ -233,7 +235,7 @@
         async function callGeminiAPI(payload, retries = 3, delay = 1000) {
             const apiKey = localStorage.getItem('geminiApiKey');
             if (!apiKey) throw new Error("API Key Gemini belum disimpan. Silakan masukkan di panel Pengaturan.");
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
             
             for (let i = 0; i < retries; i++) {
                 try {
@@ -260,7 +262,7 @@
                             const cleanText = rawText.replace(/^```json\s*|```$/g, '');
                             return JSON.parse(cleanText);
                         } catch(e) {
-                            console.error("Gagal mem-parsing JSON dari respons Gemini:", e, "Raw Text:", rawText);
+                            console.error("Gagal mem-parsing JSON dari respons Gemini:", e, "Raw Text:", result.candidates[0].content.parts[0].text);
                             throw new Error("Gemini memberikan respons yang tidak valid (bukan format JSON).");
                         }
                     } else {
@@ -349,7 +351,6 @@
                  });
             }
         }
-
         // --- FUNGSI-FUNGSI RENDERING ---
         function getHadithBadge(grade) {
             if (!grade) return '';
@@ -525,7 +526,6 @@
             showLoading('Mencari ilmu dan rujukan lengkap dari Al-Qur\'an dan Hadis...', 'results-container');
             resultsContainer.scrollIntoView({ behavior: 'smooth' });
 
-            // --- PERUBAHAN --- Membaca status checklist
             const searchQuran = document.getElementById('filter-quran')?.checked ?? true;
             const searchHadith = document.getElementById('filter-hadith')?.checked ?? true;
 
@@ -583,7 +583,7 @@
 
             Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
 
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
 
             try {
                 const resultData = await callGeminiAPI(payload);
@@ -598,7 +598,7 @@
                     Sebutkan secara eksplisit jika jawaban Anda berdasarkan ijtihad atau qiyas dan bahwa ini memerlukan verifikasi lebih lanjut oleh ahli atau ulama.
                     Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [], "follow_up_questions": [string, string, string]}`;
                     
-                    const generativePayload = { contents: [{ parts: [{ text: generativePrompt }] }], generationConfig: { responseMimeType: "application/json" } };
+                    const generativePayload = { contents: [{ parts: [{ text: generativePrompt }] }] };
                     const generativeResult = await callGeminiAPI(generativePayload);
                     renderSearchResults(generativeResult, 'generative');
                 }
@@ -620,7 +620,7 @@
             Sebutkan secara eksplisit jika jawaban Anda berdasarkan ijtihad atau qiyas dan bahwa ini memerlukan verifikasi lebih lanjut oleh ahli atau ulama.
             Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects, bisa kosong */], "follow_up_questions": [string, string, string]}`;
 
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
 
             try {
                 const resultData = await callGeminiAPI(payload);
@@ -629,9 +629,7 @@
                 showError(error.message, 'results-container');
             }
         }
-
-        // --- PERUBAHAN --- Fungsi findRelevantDocuments dimodifikasi
-        // --- GANTI FUNGSI LAMA DENGAN YANG BARU INI ---
+        // --- FUNGSI PENCARIAN CERDAS (VERSI BARU) ---
         async function findRelevantDocuments(query, limit = 15, options = { searchQuran: true, searchHadith: true }) {
             const allFoundDocs = []; 
             const lowerCaseQuery = query.toLowerCase().trim();
@@ -652,21 +650,21 @@
 
                 // === STRATEGI #1: Pencarian Frasa Utuh (Skor Tertinggi) ===
                 if (contentToSearch.includes(lowerCaseQuery)) {
-                    relevanceScore += 1000; // Beri skor sangat tinggi untuk kecocokan frasa penuh
+                    relevanceScore += 1000;
                 }
 
                 // === STRATEGI #2: Semua Kata Kunci Penting Ada (Skor Tinggi) ===
                 if (queryWords.length > 1) {
                     const allWordsFound = queryWords.every(word => contentToSearch.includes(word));
                     if (allWordsFound) {
-                        relevanceScore += 100; // Beri skor tinggi jika semua kata kunci ada
+                        relevanceScore += 100;
                     }
                 }
 
                 // === STRATEGI #3: Pencarian Kata per Kata (Skor Dasar) ===
                 queryWords.forEach(word => {
                     if (contentToSearch.includes(word)) {
-                        relevanceScore++; // Skor dasar untuk setiap kata yang cocok
+                        relevanceScore++;
                     }
                 });
                 
@@ -676,81 +674,19 @@
                 }
 
                 if (relevanceScore > 0) {
-                    // Cek agar tidak ada duplikat dokumen
                     if (!allFoundDocs.some(found => found.doc.id === doc.id)) {
                          allFoundDocs.push({ doc, score: relevanceScore });
                     }
                 }
             });
 
-            // Urutkan berdasarkan skor tertinggi
             allFoundDocs.sort((a, b) => b.score - a.score);
 
             const uniqueRelevantDocs = allFoundDocs.map(item => item.doc);
             
             console.log(`DEBUG: findRelevantDocuments for "${query}" - Found: ${uniqueRelevantDocs.length} docs (before slice)`);
             return uniqueRelevantDocs.slice(0, limit);
-            }
-            // 2. Pencarian keyword yang lebih fleksibel dengan scoring
-            loadedDatabase.forEach(doc => {
-                // --- PERUBAHAN --- Filter berdasarkan pilihan checklist
-                if (!searchQuran && doc.type === 'Quran') return;
-                if (!searchHadith && doc.type === 'Hadith') return;
-
-                let relevanceScore = 0;
-                let contentToSearch = '';
-
-                if (doc.type === 'Quran') {
-                    contentToSearch = (doc.text || '') + ' ' + (doc.translation || '');
-                } else if (doc.type === 'Hadith') {
-                    contentToSearch = (doc.text || '') + ' ' + (doc.translation || ''); 
-                }
-
-                const lowerCaseContent = contentToSearch.toLowerCase();
-
-                queryWords.forEach(word => {
-                    if (lowerCaseContent.includes(word)) {
-                        relevanceScore++;
-                    }
-                });
-
-                if (lowerCaseContent.includes(lowerCaseQuery) && lowerCaseQuery.split(' ').length > 1) {
-                    relevanceScore += 5;
-                }
-                
-                if (doc.source && doc.source.toLowerCase().includes(lowerCaseQuery)) {
-                    relevanceScore += 3;
-                }
-
-                if (['abu bakar', 'umar', 'utsman', 'ali', 'fatimah', 'aisyah'].includes(lowerCaseQuery) && relevanceScore > 0) {
-                    relevanceScore += 10;
-                }
-
-                if (doc.type === 'Quran' && relevanceScore > 0) {
-                    relevanceScore += 20;
-                }
-
-                if (relevanceScore > 0) {
-                    allFoundDocs.push({ doc, score: relevanceScore });
-                }
-            });
-
-            allFoundDocs.sort((a, b) => b.score - a.score);
-
-            const uniqueRelevantDocs = [];
-            const seenIds = new Set();
-
-            allFoundDocs.forEach(item => {
-                if (!seenIds.has(item.doc.id)) {
-                    uniqueRelevantDocs.push(item.doc);
-                    seenIds.add(item.doc.id);
-                }
-            });
-            
-            console.log(`DEBUG: findRelevantDocuments for "${query}" - Found: ${uniqueRelevantDocs.length} docs (before slice)`);
-            return uniqueRelevantDocs.slice(0, limit); // --- PERUBAHAN --- Memotong array sesuai limit
         }
-
 
         // --- INISIALISASI PANEL ---
         const panelInitializers = {
@@ -793,7 +729,6 @@
                 const randomTopic = topics[Math.floor(Math.random() * topics.length)];
                 proactiveContainer.innerHTML = `<div class="bg-gradient-to-r from-green-600 to-emerald-600 p-4 rounded-lg text-white text-center shadow-lg mb-8 animate-fade-in"><h3 class="text-xl font-bold mb-2">${emoji} ${title}</h3><p class="mb-4 text-sm text-white/90">Coba gali lebih dalam:</p><button id="proactive-btn" data-topic="${randomTopic}" class="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-full transition-all text-sm">"${randomTopic}"</button></div>`;
             },
-            // --- PERUBAHAN --- Menambahkan checklist pada panel unified-search
             'unified-search': function() {
                 const panel = document.getElementById('unified-search-panel');
                 if (!panel) return;
@@ -805,7 +740,7 @@
                     if (query) processQuery(query); 
                 });
             },
-image: function() {
+            image: function() {
                 const panel = document.getElementById('image-panel');
                 if (!panel) return;
                 panel.innerHTML = `<h2 class="text-3xl font-bold text-white mb-6">Hikmah Gambar</h2><div class="max-w-md mx-auto text-center"><div id="image-display-area" class="mb-4 h-64 bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden"><p id="image-placeholder" class="text-gray-500">Pilih gambar atau gunakan kamera</p><img id="image-preview" src="" class="hidden max-h-full max-w-full rounded-lg"/><video id="camera-stream" class="hidden w-full h-full object-cover" autoplay></video></div><canvas id="camera-canvas" class="hidden"></canvas><div id="image-controls" class="space-y-2"><div class="flex space-x-2"><button id="upload-btn" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Upload Gambar</button><button id="camera-btn" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors">Gunakan Kamera</button></div></div><div id="capture-controls" class="hidden space-y-2"><button id="capture-btn" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">Ambil Foto</button><button id="switch-camera-btn" class="w-full text-sm py-2 text-gray-300 hover:text-white transition-colors">Kamera Belakang</button><button id="cancel-camera-btn" class="w-full text-sm text-gray-400 hover:text-white transition-colors">Batal</button></div><input type="file" id="image-input" class="hidden" accept="image/*"/></div>`;
@@ -822,8 +757,7 @@ image: function() {
                 const captureBtn = panel.querySelector('#capture-btn');
                 const cancelCameraBtn = panel.querySelector('#cancel-camera-btn');
                 
-                // --- BARU: Logika untuk Ganti Kamera ---
-                let currentFacingMode = 'user'; // 'user' untuk kamera depan, 'environment' untuk belakang
+                let currentFacingMode = 'user';
 
                 const stopCamera = () => {
                     if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
@@ -851,13 +785,12 @@ image: function() {
                         stopCamera();
                     }
                 }
-                // --- AKHIR DARI LOGIKA BARU ---
 
                 const analyzeImage = async (base64Data, mimeType) => {
                     showLoading('Mengolah gambar dan menggali hikmah...');
                     document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
                     const prompt = `${pilar2PromptInstruction} Berdasarkan prinsip di atas, lihat gambar ini, deskripsikan, dan gali hikmahnya. Berikan jawaban JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
-                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
+                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }]};
                     try {
                         const resultData = await callGeminiAPI(payload);
                         renderImageAnalysis(resultData, `data:${mimeType};base64,${base64Data}`);
@@ -880,9 +813,8 @@ image: function() {
                 });
 
                 if (hasCameraSupport && isSecureContext) {
-                    cameraBtn.addEventListener('click', () => startCamera(currentFacingMode)); // BARU: Memanggil fungsi startCamera
+                    cameraBtn.addEventListener('click', () => startCamera(currentFacingMode));
                     
-                    // BARU: Tambahkan event listener untuk tombol baru di sini, di dalam if
                     const switchCameraBtn = panel.querySelector('#switch-camera-btn');
                     if(switchCameraBtn) {
                         switchCameraBtn.addEventListener('click', () => {
@@ -926,22 +858,19 @@ image: function() {
                     </div>
 
                     <div class="max-w-xl mx-auto p-4 bg-gray-800/50 border border-gray-700 rounded-lg mt-6">
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Muat Database Al-Qur'an & Hadis</label>
-                            <div class="flex items-center space-x-3 mt-2">
-                                
-                                <label for="database-file-input" class="w-full text-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-md transition-colors cursor-pointer">
-                                    Pilih File Lokal
-                                </label>
-                                <input type="file" id="database-file-input" accept=".json" class="hidden"/>
-                                
-                                <button id="load-from-github-btn" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-colors">
-                                    Load dari GitHub
-                                </button>
-                    
-                            </div>
-                            <p id="database-status" class="text-center text-xs text-gray-500 mt-3">Pilih file lokal atau muat langsung dari GitHub.</p>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Muat Database Al-Qur'an & Hadis</label>
+                        <div class="flex items-center space-x-3 mt-2">
+                            <label for="database-file-input" class="w-full text-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-md transition-colors cursor-pointer">
+                                Pilih File Lokal
+                            </label>
+                            <input type="file" id="database-file-input" accept=".json" class="hidden"/>
+                            <button id="load-from-github-btn" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-colors">
+                                Load dari GitHub
+                            </button>
                         </div>
-                        `;
+                        <p id="database-status" class="text-center text-xs text-gray-500 mt-3">Pilih file lokal atau muat langsung dari GitHub.</p>
+                    </div>
+                    `;
                 
                 const apiKeyInput = panel.querySelector('#api-key-input');
                 const saveApiKeyBtn = panel.querySelector('#save-api-key-btn');
@@ -980,9 +909,9 @@ image: function() {
                 
                 saveApiKeyBtn.addEventListener('click', saveApiKey);
                 loadApiKey();
-                
+
                 const loadFromGithubBtn = panel.querySelector('#load-from-github-btn');
-                const dbStatus = panel.querySelector('#database-status'); // Gunakan variabel yang sama dengan yang di bawah
+                const dbStatus = panel.querySelector('#database-status');
 
                 if (loadFromGithubBtn) {
                     loadFromGithubBtn.addEventListener('click', async () => {
@@ -996,18 +925,10 @@ image: function() {
                             if (!response.ok) {
                                 throw new Error(`Gagal mengunduh: Server merespons dengan status ${response.status}`);
                             }
-                            // 1. Ambil data sebagai teks mentah dulu, bukan langsung .json()
                             const rawText = await response.text();
-
-    // 2. Bersihkan teks dari spasi atau karakter tak terlihat di awal/akhir (ini kuncinya)
                             const cleanText = rawText.trim();
-
-    // 3. Baru parse teks yang sudah bersih
                             const data = JSON.parse(cleanText);
-    
-    loadedDatabase = data;
                             
-                            // Langsung masukkan data ke variabel global
                             loadedDatabase = data;
                             
                             dbStatus.textContent = `Database dari GitHub berhasil dimuat. Total ${loadedDatabase.length} entri.`;
@@ -1021,8 +942,7 @@ image: function() {
                         }
                     });
                 }
-                
-                // --- AKHIR DARI KODE TAMBAHAN ---
+
                 const databaseFileInput = panel.querySelector('#database-file-input');
                 const databaseStatus = panel.querySelector('#database-status');
 
@@ -1049,7 +969,6 @@ image: function() {
                 }
             },  
         }; 
-
 
         const panelInitialized = {};
 
@@ -1171,7 +1090,6 @@ image: function() {
 
             switchView('dashboard');
         });
-
     </script>
 </body>
 </html>
