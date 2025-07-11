@@ -235,7 +235,7 @@
         async function callGeminiAPI(payload, retries = 3, delay = 1000) {
             const apiKey = localStorage.getItem('geminiApiKey');
             if (!apiKey) throw new Error("API Key Gemini belum disimpan. Silakan masukkan di panel Pengaturan.");
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             
             for (let i = 0; i < retries; i++) {
                 try {
