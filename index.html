@@ -92,28 +92,31 @@
         
         /* --- Navigasi Sidebar --- */
         .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.2s ease-in-out;
-            font-weight: 500;
-            color: #9ca3af;
-        }
-        .nav-item:hover {
-            background-color: #1f2937; /* bg-gray-800 */
-            color: #f9fafb; /* text-gray-50 */
-        }
-        .nav-item.active {
-            background-color: #059669; /* bg-emerald-600 */
-            color: #ffffff;
-            font-weight: 600;
-        }
-        .nav-item svg {
-            margin-right: 0.75rem;
-            width: 1.25rem;
-            height: 1.25rem;
-        }
+                display: flex;
+                align-items: center;
+                justify-content: center; /* Pusatkan konten tombol */
+                padding: 0.5rem; /* Padding diperkecil */
+                border-radius: 0.5rem;
+                transition: all 0.2s ease-in-out;
+                font-weight: 500;
+                color: #9ca3af;
+                text-align: center; /* Teks rata tengah */
+                line-height: 1.2; /* Atur jarak baris */
+            }
+            .nav-item:hover { background-color: #1f2937; color: #f9fafb; }
+            .nav-item.active { background-color: #059669; color: #ffffff; font-weight: 600; }
+            .nav-item svg { margin-right: 0; margin-bottom: 0.25rem; /* Beri jarak antara ikon dan teks */ width: 1.5rem; height: 1.5rem; }
+            .nav-item .label { font-size: 0.75rem; /* Ukuran font label diperkecil */ }
+
+/* --- Slider Navigasi --- */
+#nav-slider {
+    position: absolute;
+    bottom: 0;
+    height: 3px;
+    background-color: #10b981; /* emerald-500 */
+    border-radius: 9999px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
         /* --- Visibilitas Panel --- */
         .panel { display: none; }
@@ -199,11 +202,26 @@
                 <h1 class="text-2xl font-bold text-white">Ensiklopedia Nur</h1>
                 <p class="text-sm text-emerald-400">v10.5 (View & Prompt Upgrades)</p>
             </div>
-            <nav id="main-nav" class="flex-grow space-y-2">
-                <button class="nav-item active" data-view="unified-search"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>Pencarian & Riset</button>
-                <button class="nav-item" data-view="image"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>Hikmah Gambar</button>
-                <button class="nav-item" data-view="settings"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.075.124a6.57 6.57 0 01-.22.127c-.332.183-.582.495-.645.87l-.213 1.281c-.09.542-.56.94-1.11-.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.003-.827c.293.24.438.613-.438.995s-.145-.755-.438-.995l-1.003-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37.49l1.217.456c.355.133.75.072 1.075-.124.072-.044.146-.087.22-.127.332-.183.582.495.645-.87l.213-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>Pengaturan</button>
-            </nav>
+            <div class="relative flex-grow">
+    <nav id="main-nav" class="space-y-2">
+        <button class="nav-item active flex-col" data-view="unified-search">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+            <span class="label">NUR<br>ILMU</span>
+        </button>
+        <button class="nav-item flex-col" data-view="image">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+            <span class="label">Visual<br>Hikmah</span>
+        </button>
+    </nav>
+    <div id="nav-slider" class="absolute bottom-0 h-1 bg-emerald-500 rounded-full transition-all duration-300"></div>
+</div>
+
+<div class="mt-auto">
+    <button class="nav-item w-full" data-view="settings">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.075.124a6.57 6.57 0 01-.22.127c-.332.183-.582.495-.645.87l-.213 1.281c-.09.542-.56.94-1.11-.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.003-.827c.293.24.438.613-.438.995s-.145-.755-.438-.995l-1.003-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37.49l1.217.456c.355.133.75.072 1.075-.124.072-.044.146-.087.22-.127.332-.183.582.495.645-.87l.213-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        <span>SETTINGS</span>
+    </button>
+</div>
         </aside>
 
         <main class="ml-64 flex-1 p-8 overflow-y-auto">
@@ -471,7 +489,7 @@ ETOS ILMIAH:
         function renderFollowUpQuestions(questions) {
             if (!questions || questions.length === 0) return '';
             const buttonsHtml = questions.map(q => `<button class="follow-up-btn text-left text-sm bg-gray-700 hover:bg-gray-600 text-emerald-300 px-4 py-2 rounded-lg transition-colors" data-followup-query="${q}">${q}</button>`).join('');
-            const customQuestionForm = `<form class="custom-follow-up-form mt-4 flex gap-2"><input type="text" placeholder="Ajukan pertanyaanmu sendiri..." class="flex-grow px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"><button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">Tanya</button></form>`;
+            const customQuestionForm = `<form class="custom-follow-up-form mt-4 flex gap-2"><input ...><button type="submit" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm">Tanya</button></form>`;
             return `<div class="mt-8 pt-6 border-t border-gray-700"><h3 class="text-lg font-semibold text-white mb-4">Lanjutkan Diskusi:</h3><div class="flex flex-wrap gap-3">${buttonsHtml}</div>${customQuestionForm}</div>`;
         }
         
@@ -578,9 +596,13 @@ ETOS ILMIAH:
                                         </div>
                                         <button id="export-btn" class="flex-shrink-0 ml-4 px-3 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors flex items-center">
                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                            <span>Export ke PDF</span>
+                                            <span>PDF</span>
                                         </button>
                                     </div>
+                                    <div class="flex items-center text-sm font-semibold text-gray-400 mb-4">
+                                ${statusIcon}
+                                <span>${statusLabel}</span>
+                            </div>
                                     <div id="exportable-content">
                                         <p class="text-gray-300 mb-6 whitespace-pre-wrap">${data.summary}</p>
                                         <div id="references-wrapper">${referensiHtml}</div>
@@ -871,10 +893,52 @@ ETOS ILMIAH:
                 }
 
                 const analyzeImage = async (base64Data, mimeType) => {
-                    showLoading('Mengolah gambar dan menggali hikmah...');
-                    document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
-                    const prompt = `${pilar2PromptInstruction} Berdasarkan prinsip di atas, lihat gambar ini, deskripsikan, dan gali hikmahnya. Berikan jawaban JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
-                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
+  showLoading('Mengolah gambar dan menggali hikmah...');
+  document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
+
+  const prompt = `${pilar2PromptInstruction}
+
+Anda diberikan sebuah gambar (visual) untuk dianalisis berdasarkan prinsip Islam.
+
+**TUGAS UTAMA:**
+1. Deskripsikan isi gambar secara objektif dan jelas, menggunakan bahasa ilmiah yang sesuai dengan adab seorang cendekiawan Muslim.
+2. Temukan dan jelaskan **nilai, makna, atau hikmah spiritual** (ibrah) yang terkandung dalam gambar tersebut.
+3. Hubungkan isi gambar dengan **ayat Al-Qur'an atau Hadis** yang relevan, jika tersedia dalam rujukan primer.
+4. Jika tidak tersedia dalil primer, nyatakan bahwa **hikmah yang ditarik bersifat ijtihadi atau qiyasi**, dan butuh verifikasi lanjutan oleh ahli.
+5. Jangan menambahkan tafsir atau interpretasi yang tidak didukung nash syar’i atau analogi yang tidak berakar.
+
+**FORMAT JAWABAN (WAJIB DALAM JSON):**
+{
+  "description": "Deskripsi singkat namun padat tentang isi gambar secara visual dan tematik",
+  "wisdom": "Penjelasan mendalam tentang pelajaran hidup atau nilai Islam yang bisa diambil dari gambar tersebut",
+  "references": [
+    /* Objek dalil dari Al-Qur’an atau Hadis, jika ada, sesuai format JSON pada pilar2PromptInstruction */
+  ],
+  "follow_up_questions": [
+    "Pertanyaan lanjutan untuk memperluas tafakur atas gambar",
+    "Pertanyaan yang menghubungkan konteks gambar dengan kehidupan nyata",
+    "Pertanyaan eksploratif untuk pendalaman syariat terkait makna visual"
+  ]
+}
+`;
+
+  const payload = {
+    contents: [
+      {
+        parts: [
+          { text: prompt },
+          { inline_data: { mime_type: mimeType, data: base64Data } }
+        ]
+      }
+    ],
+    generationConfig: {
+      responseMimeType: "application/json"
+    }
+  };
+
+  // Lanjutkan proses sesuai pipeline kamu (misalnya fetch ke LLM, parsing response, dsb)
+};
+
                     try {
                         const resultData = await callGeminiAPI(payload);
                         renderImageAnalysis(resultData, `data:${mimeType};base64,${base64Data}`);
@@ -934,9 +998,13 @@ ETOS ILMIAH:
                     <div class="max-w-xl mx-auto p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
                         <label for="api-key-input" class="block text-sm font-medium text-gray-300 mb-2">Gemini API Key Anda</label>
                         <div class="flex items-center space-x-2">
-                            <input id="api-key-input" type="password" placeholder="Masukkan API Key dari Google AI Studio" class="flex-grow px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
-                            <button id="save-api-key-btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-colors">Simpan</button>
-                        </div>
+    <input id="api-key-input" type="password" placeholder="Masukkan API Key dari Google AI Studio" class="flex-grow px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
+    <button id="save-api-key-btn" class="p-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+        </svg>
+    </button>
+</div>
                         <p id="api-key-status" class="text-xs text-gray-500 mt-2"></p>
                         <p class="text-center text-xs text-gray-500 mt-3">Tidak punya API Key? Dapatkan di <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:underline">Google AI Studio</a>.</p>
                     </div>
@@ -1056,30 +1124,49 @@ ETOS ILMIAH:
 
         const panelInitialized = {};
 
-        function switchView(viewName) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('panel-active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-            const navButton = document.querySelector(`.nav-item[data-view="${viewName}"]`);
-            if (navButton) navButton.classList.add('active');
-            
-            const activePanel = document.getElementById(`${viewName}-panel`);
-            if (activePanel) activePanel.classList.add('panel-active');
-
-            if (!panelInitialized[viewName]) {
-                if (panelInitializers[viewName]) {
-                    panelInitializers[viewName]();
-                }
-                panelInitialized[viewName] = true;
-            }
-            
-            const resultsContainer = document.getElementById('results-container');
-            if (viewCache.hasOwnProperty(viewName) && viewCache[viewName]) {
-                resultsContainer.innerHTML = viewCache[viewName];
-            } else {
-                resultsContainer.innerHTML = '';
-            }
+        function updateSlider(activeButton) {
+    const slider = document.getElementById('nav-slider');
+    if (slider && activeButton) {
+        // Hanya update jika tombol ada di dalam nav utama
+        if (activeButton.closest('#main-nav')) {
+            slider.style.opacity = '1';
+            slider.style.width = `${activeButton.offsetWidth}px`;
+            slider.style.left = `${activeButton.offsetLeft}px`;
+            slider.style.top = `${activeButton.offsetTop + activeButton.offsetHeight - 4}px`; // posisi vertikal
+        } else {
+            // Sembunyikan slider jika tombol (seperti settings) tidak di nav utama
+            slider.style.opacity = '0';
         }
+    }
+}
+
+function switchView(viewName) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('panel-active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    const navButton = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+    if (navButton) {
+        navButton.classList.add('active');
+        updateSlider(navButton); // Panggil fungsi update slider
+    }
+    
+    const activePanel = document.getElementById(`${viewName}-panel`);
+    if (activePanel) activePanel.classList.add('panel-active');
+
+    if (!panelInitialized[viewName]) {
+        if (panelInitializers[viewName]) {
+            panelInitializers[viewName]();
+        }
+        panelInitialized[viewName] = true;
+    }
+    
+    const resultsContainer = document.getElementById('results-container');
+    if (viewCache.hasOwnProperty(viewName) && viewCache[viewName]) {
+        resultsContainer.innerHTML = viewCache[viewName];
+    } else {
+        resultsContainer.innerHTML = '';
+    }
+}
 
         document.addEventListener('DOMContentLoaded', () => {
             const mainNav = document.getElementById('main-nav');
@@ -1170,7 +1257,10 @@ ETOS ILMIAH:
                     btn.title = "Fitur dikte memerlukan koneksi aman (HTTPS).";
                 });
             }
-
+        const initialActiveButton = document.querySelector('.nav-item.active');
+    if (initialActiveButton) {
+        switchView(initialActiveButton.dataset.view);
+    } else {
             switchView('unified-search');
         });
     </script>
