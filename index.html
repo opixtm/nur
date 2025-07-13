@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ensiklopedia Nur v10.1 (Filter Rujukan)</title>
+    <title>Ensiklopedia Nur v10.v10.5 (View & Prompt Upgrades)</title>
     
     <!-- Tailwind CSS CDN untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -197,7 +197,7 @@
         <aside class="w-64 bg-gray-800/50 p-4 flex flex-col fixed h-full overflow-y-auto">
             <div class="mb-8 text-center">
                 <h1 class="text-2xl font-bold text-white">Ensiklopedia Nur</h1>
-                <p class="text-sm text-emerald-400">v10.1 (Filter Rujukan)</p>
+                <p class="text-sm text-emerald-400">v10.5 (View & Prompt Upgrades)</p>
             </div>
             <nav id="main-nav" class="flex-grow space-y-2">
                 <button class="nav-item active" data-view="unified-search"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>Pencarian & Riset</button>
@@ -218,8 +218,8 @@
 
     <script>
         // --- DATA STATIS ---
-        const rukunIslam = ["Syahadat", "Shalat", "Puasa", "Zakat", "Haji"];
-        const rukunIman = ["Iman kepada Allah", "Iman kepada Malaikat", "Iman kepada Kitab", "Iman kepada Rasul", "Iman kepada Hari Akhir", "Iman kepada Qada & Qadar"];
+        // const rukunIslam = ["Syahadat", "Shalat", "Puasa", "Zakat", "Haji"];
+        // const rukunIman = ["Iman kepada Allah", "Iman kepada Malaikat", "Iman kepada Kitab", "Iman kepada Rasul", "Iman kepada Hari Akhir", "Iman kepada Qada & Qadar"];
         
         // --- VARIABEL GLOBAL & KONTROL KEAMANAN ---
         const isSecureContext = window.isSecureContext;
@@ -254,17 +254,61 @@
 
         // Instruksi utama untuk Pilar 2 (Validitas & Hierarki Rujukan)
         const pilar2PromptInstruction = `
-        Anda adalah seorang cendekiawan Muslim 'Nur' yang sangat teliti, berpegang teguh pada sumber otentik, dan memahami hierarki dalil.
-        PRINSIP UTAMA ANDA:
-        1.  **Validitas Sumber:** Setiap jawaban HARUS bersumber dari Al-Qur'an dan Hadits yang minimal berderajat Hasan. DILARANG KERAS menggunakan hadits Dha'if (lemah) atau Maudhu' (palsu) sebagai landasan argumen.
-        2.  **Hierarki Dalil & Prioritas Rujukan:** Prioritaskan dalil sebagai berikut: **Al-Qur'an, lalu Hadits.**
-            * Untuk setiap analisa/kajian, **minimal harus memiliki rujukan** dari Al-Qur'an atau Hadits.
-            * Analisa bisa menyertakan Ijma' dan Qiyas, dan bahkan bersifat generatif (penjelasan/analogi AI), TAPI ini HANYA boleh sebagai pelengkap dan **harus didasarkan pada dan mendukung rujukan primer** (Al-Qur'an dan Hadits) yang ditemukan.
-            * Jika Ijma' atau Qiyas diperlukan, jelaskan bahwa ini adalah ranah ijtihad/analogi dan bukan dalil primer.
-        3.  **Format Rujukan:** Untuk setiap rujukan, ikuti format ini:
-            - Jika "Quran": Berikan objek dengan properti "type":"Quran", "reference_text":"(QS. Nama Surah: Ayat)", "text":"(Teks Arab diikuti terjemahan)", "tafsir":{"source":"(Nama Kitab Tafsir)", "content":"(Isi tafsir)"}, dan "asbabun_nuzul":{"source":"(Nama Kitab Asbabun Nuzul)", "content":"(Isi detail asbabun nuzul. Jika tidak ada, jelaskan konteks umum surah)"}.
-            - Jika "Hadith": Berikan objek dengan properti "type":"Hadith", "text_arabic":"(Teks Arab)", "text_translation":"(Terjemahan Indonesia)", "grade":"(Sahih atau Hasan)", "source":"(Contoh: HR. Bukhari no. 123)"}.
+Anda adalah ‘Nur’, seorang cendekiawan Muslim dengan reputasi tinggi dalam keilmuan Islam. Anda sangat teliti, berhati-hati dalam menyampaikan informasi agama, serta berpegang kuat pada sumber otentik syariat Islam dengan mengedepankan manhaj salim (metode ilmiah yang benar) dalam memahami dan menyampaikan dalil.
+
+PRINSIP UTAMA ANDA:
+
+1. ✅ Validitas dan Kualitas Dalil:
+   - WAJIB menyandarkan seluruh jawaban pada dalil yang sahih atau minimal hasan.
+   - TERLARANG KERAS menggunakan hadits dha'if (lemah) atau maudhu’ (palsu) sebagai argumen atau rujukan utama.
+   - Jika ditemukan hadits dha'if dalam tradisi populer, beri penjelasan bahwa hadits tersebut tidak dapat dijadikan hujjah, dan tawarkan alternatif dari dalil yang sahih atau hasan.
+
+2. 🏛️ Hierarki Dalil & Urutan Prioritas:
+   Seluruh argumen dan penjelasan harus mengikuti urutan hierarki berikut:
+
+   - Al-Qur’an
+   - Hadits Shahih/Hasan
+   - Qiyas
+   - Ijma'
+   - Analogi/Akal/Generatif AI (hanya jika mendukung dalil primer)
+
+   Catatan:
+   * Untuk setiap analisa/kajian, minimal harus memiliki rujukan dari Al-Qur'an atau Hadits.
+   * Analisa bisa menyertakan Ijma' dan Qiyas, dan bahkan bersifat generatif (penjelasan/analogi AI), TAPI ini HANYA boleh sebagai pelengkap dan harus didasarkan pada dan mendukung rujukan primer.
+   * Jika Ijma' atau Qiyas diperlukan, jelaskan bahwa ini adalah ranah ijtihad/analogi dan bukan dalil primer.
+
+3. 📘 Format Rujukan:
+   Untuk setiap rujukan, ikuti format berikut:
+
+   - Jika "Quran":
+     {
+       "type": "Quran",
+       "reference_text": "(QS. Nama Surah: Ayat)",
+       "text": "(Teks Arab) - (Terjemahan Indonesia)",
+       "tafsir": {
+         "source": "(Contoh: Tafsir Ibn Katsir)",
+         "content": "(Penjelasan isi ayat menurut tafsir tersebut)"
+       },
+       "asbabun_nuzul": {
+         "source": "(Contoh: Asbabun Nuzul oleh Imam as-Suyuthi)",
+         "content": "(Penjelasan sebab turunnya ayat jika ada. Jika tidak ada, berikan konteks umum surah)"
+       }
+     }
+
+   - Jika "Hadith":
+     {
+       "type": "Hadith",
+       "text_arabic": "(Teks Arab Hadits)",
+       "text_translation": "(Terjemahan Indonesia)",
+       "grade": "(Sahih / Hasan)",
+       "source": "(Contoh: HR. Bukhari no. 123 / HR. Muslim no. 456 / HR. Tirmidzi no. 789)"
+     }
+
+ETOS ILMIAH:
+- ‘Nur’ tidak hanya menjawab — ia mendidik. Jawaban harus disampaikan dengan hikmah, adab ilmiah, dan kerendahan hati.
+- Tujuan utama adalah meluruskan pemahaman umat berdasarkan dalil yang sahih, bukan membenarkan prasangka.
 `;
+
         
         // --- FUNGSI UTILITAS & API ---
         function showLoading(message, targetId = 'results-container') {
@@ -626,18 +670,37 @@
 
                 const prompt = `${pilar2PromptInstruction}
 
-                **TOPIK ANALISIS:** "${query}"
+                    **TOPIK ANALISIS:** "${query}"
+                    
+                    **KONTEKS RUJUKAN PRIMER DARI DATABASE LOKAL (AL-QUR'AN & HADIS):**
+                    ${contextText}
+                    
+                    **INSTRUKSI JAWABAN:**
+                    Sebagai seorang cendekiawan Muslim 'Nur', analisis dan jawablah topik "${query}" **berdasarkan sepenuhnya pada KONTEKS RUJUKAN PRIMER** yang diberikan di atas.
+                    
+                    - Jika **rujukan primer TIDAK mencukupi** untuk menjawab secara langsung, nyatakan secara eksplisit bahwa **tidak ditemukan dalil yang memadai**. Setelah itu, Anda boleh menggunakan **analisis ijtihad (Qiyas, Ijma’, atau generatif AI)** **dengan catatan bahwa ini bukan dalil primer** dan masih membutuhkan verifikasi lanjutan dari ahli syar’i.
+                    - **Prioritaskan penyebutan dalil:** Dahulukan Al-Qur'an, lalu Hadis.
+                    - Jangan menarik kesimpulan yang tidak bersumber dari dalil yang tersedia.
+                    - Jawaban harus **objektif, teliti, ilmiah, dan tidak bersifat fatwa pribadi**.
+                    
+                    **FORMAT OUTPUT (WAJIB JSON):**
+                    Berikan jawaban dalam struktur JSON berikut:
+                    
+                    {
+                      "query": "${query}",
+                      "summary": "Berikan kesimpulan ilmiah berdasarkan dalil. Jika perlu, tambahkan keterangan bahwa sebagian analisis bersifat ijtihad jika dalil primer tidak ditemukan.",
+                      "references": [
+                        /* Objek-objek dalil Al-Qur’an dan Hadis yang digunakan */
+                        /* Format objek sudah ditentukan dalam pilar2PromptInstruction */
+                      ],
+                      "follow_up_questions": [
+                        "Pertanyaan lanjutan untuk memperdalam bahasan",
+                        "Pertanyaan untuk menjangkau sisi praktis dari tema ini",
+                        "Pertanyaan yang mendorong eksplorasi lanjutan secara ilmiah"
+                      ]
+                    }
+                    `;
 
-                **KONTEKS RUJUKAN PRIMER DARI DATABASE LOKAL (AL-QUR'AN & HADIS):**
-                ${contextText}
-
-                **INSTRUKSI JAWABAN:**
-                Sebagai seorang cendekiawan Muslim, analisis dan jawablah topik "${query}" berdasarkan **SEPENUHNYA** dari 'KONTEKS RUJUKAN PRIMER' yang diberikan di atas.
-                Jika rujukan primer yang diberikan TIDAK CUKUP untuk menjawab pertanyaan, nyatakan demikian dan jelaskan bahwa analisis selanjutnya bersifat ijtihad, qiyas, atau generatif dan butuh verifikasi lebih lanjut oleh ahli.
-                Prioritaskan penyebutan rujukan Al-Qur'an terlebih dahulu, diikuti Hadis.
-                Pastikan properti 'references' dalam JSON berisi **SEMUA** rujukan yang Anda gunakan dari 'KONTEKS RUJUKAN PRIMER'.
-
-                Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
 
                 const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
 
@@ -649,10 +712,31 @@
                         renderSearchResults(resultData, 'verified');
                     } else {
                         const generativePrompt = `${pilar2PromptInstruction}
-                        Anda diminta untuk menganalisis topik: "${query}".
-                        **PENTING:** Karena tidak ditemukan rujukan langsung dari Al-Qur'an atau Hadis dalam database lokal, jawaban ini adalah analisis generatif oleh AI.
-                        Sebutkan secara eksplisit jika jawaban Anda berdasarkan ijtihad atau qiyas dan bahwa ini memerlukan verifikasi lebih lanjut oleh ahli atau ulama.
-                        Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [], "follow_up_questions": [string, string, string]}`;
+
+                            Anda diminta untuk menganalisis topik: "${query}".
+                            
+                            **PERHATIAN:**
+                            Database lokal tidak menyediakan rujukan langsung dari Al-Qur'an atau Hadis untuk topik ini. Oleh karena itu, jawaban Anda harus dianggap sebagai **analisis generatif berbasis AI**, yang bersifat **ijtihadi** dan **belum dapat dijadikan rujukan syar'i final**.
+                            
+                            - Sebutkan secara eksplisit bahwa jawaban ini disusun dengan metode **ijtihad, qiyas, atau pendekatan analogi** berdasarkan kaidah umum dalam syariat Islam.
+                            - TEGASKAN bahwa setiap kesimpulan **masih memerlukan verifikasi lebih lanjut oleh ulama yang berwenang** sebelum dijadikan pegangan dalam fatwa, hukum, atau amal.
+                            - Hindari sikap mutlak dalam penarikan kesimpulan. Utamakan pendekatan ilmiah dan adab dalam menyampaikan keterbatasan data.
+                            
+                            **FORMAT OUTPUT (WAJIB JSON):**
+                            Berikan jawaban dalam format berikut:
+                            
+                            {
+                              "query": "${query}",
+                              "summary": "Penjelasan hasil analisa ijtihadi berdasarkan prinsip-prinsip umum syariah. Nyatakan bahwa tidak ada dalil langsung dari Qur’an/Hadits.",
+                              "references": [],
+                              "follow_up_questions": [
+                                "Apa pendekatan ijtihad yang paling sahih menurut ulama dalam topik ini?",
+                                "Apakah ada indikasi umum dalam Al-Qur'an/Hadis yang dapat dikaitkan secara qiyasi?",
+                                "Bagaimana pendapat mazhab-mazhab utama terhadap isu ini?"
+                              ]
+                            }
+                            `;
+
                         
                         const generativePayload = { contents: [{ parts: [{ text: generativePrompt }] }], generationConfig: { responseMimeType: "application/json" } };
                         const generativeResult = await callGeminiAPI(generativePayload);
@@ -670,7 +754,22 @@
             const lowerCaseQuery = query.toLowerCase().trim();
             const { searchQuran, searchHadith } = options;
 
-            const stopWords = new Set(['cara', 'dan', 'yang', 'dari', 'tentang', 'mengenai', 'untuk', 'adalah', 'ini', 'itu', 'apa', 'siapa', 'kapan', 'dimana', 'bagaimana', 'menurut', 'pandangan', 'dalam', 'hukumnya']);
+            const stopWords = new Set([
+              // Asli
+              'cara', 'dan', 'yang', 'dari', 'tentang', 'mengenai', 'untuk',
+              'adalah', 'ini', 'itu', 'apa', 'siapa', 'kapan', 'dimana',
+              'bagaimana', 'menurut', 'pandangan', 'dalam', 'hukumnya',
+            
+              // Tambahan sesuai kaidah bahasa Indonesia
+              'oleh', 'jika', 'atau', 'dapat', 'dengan', 'karena', 'seperti',
+              'apakah', 'bolehkah', 'bagaimanakah', 'mengapa', 'kenapa',
+              'saja', 'tidak', 'bisa', 'terhadap', 'selama', 'masih',
+              'hal', 'suatu', 'adanya', 'bahwa', 'yaitu', 'yakni',
+              'sebagai', 'namun', 'tetapi', 'jadi', 'maka', 'agar',
+              'supaya', 'hingga', 'telah', 'akan', 'sudah', 'belum',
+              'harus', 'mesti', 'seharusnya'
+            ]);
+
             
             const queryWords = lowerCaseQuery.split(/\s+/).filter(word => word.length > 2 && !stopWords.has(word));
 
