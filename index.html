@@ -19,57 +19,58 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* --- Gaya Responsif Mobile (Perbaikan Tuntas) --- */
+        /* --- Gaya Responsif Mobile (Versi NON-STICKY) --- */
         @media (max-width: 768px) {
-            /* (1) Buat 'aside' menjadi header yang menempel di atas */
+            /* (1) Atur tata letak utama menjadi tumpukan vertikal */
+            .flex.h-screen {
+                flex-direction: column;
+                height: auto;
+            }
+
+            /* (2) Jadikan 'aside' sebagai header statis biasa (ikut scroll) */
             aside {
-                position: sticky;   /* Kunci utama: Buat seluruh blok header menempel */
-                top: 0;
-                z-index: 1000;      /* Pastikan berada di lapisan paling atas */
+                position: static !important; /* MEMASTIKAN TIDAK ADA STICKY */
                 width: 100% !important;
                 height: auto !important;
-                background-color: #111827; /* Warna solid agar konten tidak tembus (bg-gray-900) */
-                padding: 0.75rem 1rem;
-                border-bottom: 1px solid #374151; /* Garis pemisah */
-                
-                /* Reset tata letak internalnya */
-                display: block;
-                position: static; /* Hapus posisi aneh dari aturan desktop */
+                background-color: #111827; /* Warna latar header */
+                padding: 1rem;
+                border-bottom: 1px solid #374151;
             }
 
-            /* (2) Atur ulang posisi judul di dalam header */
+            /* (3) Atur judul dan navigasi di dalam header */
             aside .mb-8 {
-                margin-bottom: 0.75rem; /* Jarak dari judul ke navigasi */
                 text-align: center;
+                margin-bottom: 1rem;
             }
-
-            /* (3) Atur baris navigasi agar bisa scroll ke samping */
             #main-nav {
                 display: flex;
-                flex-direction: row;
-                overflow-x: auto;   /* Aktifkan scroll horizontal */
-                justify-content: flex-start; /* Mulai dari kiri */
+                overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
-                scrollbar-width: none; /* Sembunyikan scrollbar */
+                scrollbar-width: none; /* Sembunyikan scrollbar di Firefox */
             }
             #main-nav::-webkit-scrollbar {
-                display: none;
+                display: none; /* Sembunyikan scrollbar di Chrome, Safari */
             }
             .nav-item {
                 flex-shrink: 0;
                 white-space: nowrap;
+                margin-right: 0.5rem;
             }
 
-            /* (4) Beri ruang pada konten utama agar tidak tertutup header */
+            /* (4) Atur area konten utama */
             main {
                 margin-left: 0 !important;
-                /* Padding atas ini krusial untuk mendorong konten ke bawah header */
-                padding-top: 1rem;
+                padding: 1.5rem 1rem; /* Padding normal, tidak perlu ganjalan */
+                flex-grow: 1;
             }
 
-            /* (5) Atur ulang tata letak spesifik lainnya */
-            #pillar-container, #exportable-content .grid {
-                grid-template-columns: 1fr; /* Paksa jadi satu kolom */
+            /* (5) Pastikan panel di dalam konten juga satu kolom */
+            #pillar-container, 
+            #exportable-content .grid,
+            #unified-search-panel .max-w-md,
+            #settings-panel .max-w-xl {
+                grid-template-columns: 1fr;
+                max-width: 100%;
             }
         }
         /* --- Gaya Umum --- */
