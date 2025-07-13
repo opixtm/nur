@@ -871,52 +871,10 @@ ETOS ILMIAH:
                 }
 
                 const analyzeImage = async (base64Data, mimeType) => {
-  showLoading('Mengolah gambar dan menggali hikmah...');
-  document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
-
-  const prompt = `${pilar2PromptInstruction}
-
-Anda diberikan sebuah gambar (visual) untuk dianalisis berdasarkan prinsip Islam.
-
-**TUGAS UTAMA:**
-1. Deskripsikan isi gambar secara objektif dan jelas, menggunakan bahasa ilmiah yang sesuai dengan adab seorang cendekiawan Muslim.
-2. Temukan dan jelaskan **nilai, makna, atau hikmah spiritual** (ibrah) yang terkandung dalam gambar tersebut.
-3. Hubungkan isi gambar dengan **ayat Al-Qur'an atau Hadis** yang relevan, jika tersedia dalam rujukan primer.
-4. Jika tidak tersedia dalil primer, nyatakan bahwa **hikmah yang ditarik bersifat ijtihadi atau qiyasi**, dan butuh verifikasi lanjutan oleh ahli.
-5. Jangan menambahkan tafsir atau interpretasi yang tidak didukung nash syar’i atau analogi yang tidak berakar.
-
-**FORMAT JAWABAN (WAJIB DALAM JSON):**
-{
-  "description": "Deskripsi singkat namun padat tentang isi gambar secara visual dan tematik",
-  "wisdom": "Penjelasan mendalam tentang pelajaran hidup atau nilai Islam yang bisa diambil dari gambar tersebut",
-  "references": [
-    /* Objek dalil dari Al-Qur’an atau Hadis, jika ada, sesuai format JSON pada pilar2PromptInstruction */
-  ],
-  "follow_up_questions": [
-    "Pertanyaan lanjutan untuk memperluas tafakur atas gambar",
-    "Pertanyaan yang menghubungkan konteks gambar dengan kehidupan nyata",
-    "Pertanyaan eksploratif untuk pendalaman syariat terkait makna visual"
-  ]
-}
-`;
-
-  const payload = {
-    contents: [
-      {
-        parts: [
-          { text: prompt },
-          { inline_data: { mime_type: mimeType, data: base64Data } }
-        ]
-      }
-    ],
-    generationConfig: {
-      responseMimeType: "application/json"
-    }
-  };
-
-  // Lanjutkan proses sesuai pipeline kamu (misalnya fetch ke LLM, parsing response, dsb)
-};
-
+                    showLoading('Mengolah gambar dan menggali hikmah...');
+                    document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
+                    const prompt = `${pilar2PromptInstruction} Berdasarkan prinsip di atas, lihat gambar ini, deskripsikan, dan gali hikmahnya. Berikan jawaban JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
+                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
                     try {
                         const resultData = await callGeminiAPI(payload);
                         renderImageAnalysis(resultData, `data:${mimeType};base64,${base64Data}`);
