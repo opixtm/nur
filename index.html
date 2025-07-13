@@ -19,97 +19,59 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* --- Gaya Responsif untuk Mobile (Final Sesuai Feedback) --- */
+        /* --- Gaya Responsif Mobile (Perbaikan Tuntas) --- */
         @media (max-width: 768px) {
-            /* (1) Reset layout utama */
-            body {
-                overflow-x: hidden;
-            }
-            .flex.h-screen {
-                flex-direction: column;
-                height: auto;
-                min-height: 100vh;
-            }
-
-            /* (2) Biarkan 'aside' (wadah judul) menjadi elemen biasa yang bisa di-scroll */
+            /* (1) Buat 'aside' menjadi header yang menempel di atas */
             aside {
-                position: static; /* HAPUS STICKY DARI SINI */
+                position: sticky;   /* Kunci utama: Buat seluruh blok header menempel */
+                top: 0;
+                z-index: 1000;      /* Pastikan berada di lapisan paling atas */
                 width: 100% !important;
                 height: auto !important;
-                background-color: transparent;
-                padding: 1rem;
-                border-bottom: none; /* Hapus border dari sini */
-
-                /* Layout internal kembali ke vertikal agar judul di atas nav */
-                display: flex;
-                flex-direction: column;
-                align-items: center; /* Pusatkan judul */
-            }
-
-            /* (3) Atur ulang judul */
-            aside .mb-8 {
-                margin-bottom: 0.5rem; /* Beri sedikit jarak dari judul ke nav */
-            }
-
-            /* (4) BUAT BAGIAN NAVIGASI MENJADI STICKY */
-            #main-nav {
-                position: sticky; /* BUAT HANYA NAVIGASI YANG STICKY */
-                top: 0;           /* Menempel di paling atas viewport */
-                z-index: 50;      /* Pastikan di atas segalanya */
-
-                /* Style untuk navigation bar */
-                background-color: #1f2937; /* Warna bg-gray-800 agar konten tidak tembus */
-                width: 100vw; /* Lebar penuh viewport */
-                padding: 0.25rem 0;
-                border-bottom: 1px solid #374151; /* Garis bawah pemisah */
+                background-color: #111827; /* Warna solid agar konten tidak tembus (bg-gray-900) */
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid #374151; /* Garis pemisah */
                 
-                /* Tata letak item nav horizontal */
+                /* Reset tata letak internalnya */
+                display: block;
+                position: static; /* Hapus posisi aneh dari aturan desktop */
+            }
+
+            /* (2) Atur ulang posisi judul di dalam header */
+            aside .mb-8 {
+                margin-bottom: 0.75rem; /* Jarak dari judul ke navigasi */
+                text-align: center;
+            }
+
+            /* (3) Atur baris navigasi agar bisa scroll ke samping */
+            #main-nav {
                 display: flex;
                 flex-direction: row;
-                justify-content: center; /* Ratakan item di tengah jika tidak terlalu banyak */
-                overflow-x: auto;
-                overflow-y: hidden;
+                overflow-x: auto;   /* Aktifkan scroll horizontal */
+                justify-content: flex-start; /* Mulai dari kiri */
                 -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
+                scrollbar-width: none; /* Sembunyikan scrollbar */
             }
             #main-nav::-webkit-scrollbar {
                 display: none;
             }
-            
-            /* (5) Atur setiap item navigasi */
             .nav-item {
                 flex-shrink: 0;
                 white-space: nowrap;
-                margin: 0;
-                padding: 0.5rem 1rem; /* Area klik yang lebih nyaman */
             }
 
-            /* (6) Reset 'main' content area */
+            /* (4) Beri ruang pada konten utama agar tidak tertutup header */
             main {
                 margin-left: 0 !important;
-                padding: 1rem;
-                flex-grow: 1;
-                padding-top: 5rem; 
+                /* Padding atas ini krusial untuk mendorong konten ke bawah header */
+                padding-top: 1rem;
             }
 
-            /* (7) Atur ulang layout pilar di dashboard */
-            #pillar-container {
-                grid-template-columns: 1fr;
-            }
-            
-            /* (8) Perbaikan untuk hasil gambar */
-            #exportable-content .grid {
-                grid-template-columns: 1fr;
+            /* (5) Atur ulang tata letak spesifik lainnya */
+            #pillar-container, #exportable-content .grid {
+                grid-template-columns: 1fr; /* Paksa jadi satu kolom */
             }
         }
-
-       /* --- Lebih lanjut untuk layar sangat kecil (opsional) --- */
-       @media (max-width: 480px) {
-           aside #main-nav .nav-item {
-               font-size: 0.85rem;
-               margin-right: 0.75rem;
-           }
-       }
         /* --- Gaya Umum --- */
         body { 
             font-family: 'Inter', sans-serif; 
