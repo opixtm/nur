@@ -19,6 +19,51 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
+        /* --- Gaya Responsif untuk Mobile --- */
+        @media (max-width: 768px) {
+            /* Ubah container utama menjadi layout vertikal */
+            .flex.h-screen {
+                flex-direction: column;
+                height: auto; /* Izinkan tinggi halaman menyesuaikan konten */
+            }
+
+            /* Jadikan sidebar sebagai header di bagian atas */
+            aside {
+                position: static; /* Hapus posisi fixed */
+                width: 100%;      /* Lebar penuh */
+                height: auto;     /* Tinggi menyesuaikan konten */
+                overflow-y: visible;
+            }
+
+            /* Hapus margin kiri pada konten utama agar lebar penuh */
+            main {
+                margin-left: 0;
+                padding: 1rem; /* Kurangi padding agar tidak terlalu sempit */
+            }
+
+            /* Atur ulang tata letak di dalam sidebar */
+            aside .mb-8 {
+                margin-bottom: 1rem; /* Kurangi margin bawah pada judul */
+            }
+            
+            /* Buat navigasi bisa di-scroll secara horizontal */
+            #main-nav {
+                display: flex;
+                flex-direction: row; /* Ubah arah menjadi baris */
+                overflow-x: auto;    /* Aktifkan scroll horizontal */
+                space-y-2: 0;        /* Hapus spasi vertikal */
+                padding-bottom: 0.5rem;
+                -ms-overflow-style: none;  /* Sembunyikan scrollbar di IE dan Edge */
+                scrollbar-width: none;     /* Sembunyikan scrollbar di Firefox */
+            }
+            #main-nav::-webkit-scrollbar {
+                display: none; /* Sembunyikan scrollbar di Chrome, Safari, dan Opera */
+            }
+            #main-nav .nav-item {
+                flex-shrink: 0; /* Cegah item agar tidak menyusut */
+                margin-right: 0.5rem;
+            }
+        }
         /* --- Gaya Umum --- */
         body { 
             font-family: 'Inter', sans-serif; 
