@@ -19,64 +19,81 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* --- Gaya Responsif untuk Mobile --- */
-        @/* --- Gaya Responsif untuk Mobile (Perbaikan) --- */
-       @media (max-width: 768px) {
-           body {
-               overflow-x: hidden; /* Mencegah scroll horizontal */
-           }
+        /* --- Gaya Responsif untuk Mobile (Perbaikan Definitif) --- */
+        @media (max-width: 768px) {
+            /* (1) Reset layout utama */
+            body {
+                overflow-x: hidden; /* Mencegah scroll horizontal yang tidak diinginkan */
+            }
+            .flex.h-screen {
+                flex-direction: column; /* Ubah ke layout vertikal */
+                height: auto;
+                min-height: 100vh;
+            }
 
-           /* Layout Utama Flex Column */
-           .flex.h-screen {
-               flex-direction: column;
-               min-height: 100vh; /* Pastikan mengisi tinggi layar */
-           }
+            /* (2) Ubah 'aside' menjadi header atas yang tetap (sticky) */
+            aside {
+                position: sticky; /* Tetap di atas saat scroll */
+                top: 0;
+                width: 100% !important; /* Paksa lebar penuh */
+                height: auto !important; /* Tinggi otomatis */
+                z-index: 50; /* Pastikan di atas konten lain */
+                background-color: #1f2937; /* Warna latar (bg-gray-800) */
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid #374151; /* Garis bawah (border-gray-700) */
+                
+                /* Layout internal header */
+                display: flex;
+                flex-direction: row; /* Konten header berbaris horizontal */
+                align-items: center;
+                justify-content: space-between;
+            }
 
-           /* Sidebar sebagai Header */
-           aside {
-               position: sticky; /* Tetap di atas saat di-scroll */
-               top: 0;
-               z-index: 10; /* Pastikan di atas konten lain */
-               width: 100%;
-               height: auto;
-               background-color: inherit; /* Warisi warna latar belakang */
-               padding: 0.5rem 1rem;
-               box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-               display: flex;
-               flex-direction: row;
-               justify-content: space-between; /* Ratakan item */
-               align-items: center;
-           }
+            /* (3) Atur ulang judul di dalam header */
+            aside .mb-8 {
+                margin-bottom: 0; /* Hapus margin dari grup judul */
+                flex-shrink: 0; /* Jangan biarkan judul menyusut */
+            }
 
-           aside #main-nav {
-               display: flex;
-               flex-direction: row;
-               overflow-x: auto;
-               white-space: nowrap; /* Cegah teks wrap */
-               -webkit-overflow-scrolling: touch; /* Scrolling halus di iOS */
-               margin-left: 1rem;
-           }
+            /* (4) Ubah navigasi menjadi list horizontal yang bisa di-scroll */
+            #main-nav {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding-bottom: 0; /* Hapus padding bawah jika ada */
+                space-y-2: 0; /* Hapus spasi vertikal antar item */
+                -webkit-overflow-scrolling: touch; /* Scrolling halus di iOS */
+                scrollbar-width: none; /* Sembunyikan scrollbar di Firefox */
+            }
+            #main-nav::-webkit-scrollbar {
+                display: none; /* Sembunyikan scrollbar di Webkit */
+            }
+            
+            /* (5) Atur setiap item navigasi */
+            .nav-item {
+                flex-shrink: 0; /* Jangan biarkan item menyusut */
+                white-space: nowrap; /* Pastikan teks tidak turun baris */
+                margin: 0 0.5rem; /* Jarak horizontal antar item */
+            }
 
-           aside #main-nav .nav-item {
-               margin-right: 1rem;
-           }
+            /* (6) Reset 'main' content area */
+            main {
+                margin-left: 0 !important; /* Hapus margin kiri secara paksa */
+                padding: 1rem;
+                flex-grow: 1; /* Biarkan konten mengisi sisa ruang */
+            }
 
-           aside .mb-8 {
-               margin-bottom: 0; /* Hapus margin pada judul di mobile */
-           }
-
-           /* Konten Utama */
-           main {
-               margin-left: 0;
-               padding: 1rem;
-               flex-grow: 1; /* Biarkan konten utama mengisi sisa ruang */
-           }
-
-           /* Sembunyikan ikon "Pe" jika ruang terbatas */
-           aside > div:last-child {
-               display: none; /* Atau atur agar muncul di layar lebih lebar */
-           }
-       }
+            /* (7) Atur ulang layout pilar di dashboard */
+            #pillar-container {
+                grid-template-columns: 1fr; /* Paksa menjadi satu kolom */
+            }
+            
+            /* (8) Perbaikan untuk hasil gambar */
+            #exportable-content .grid {
+                grid-template-columns: 1fr; /* Paksa konten gambar jadi satu kolom */
+            }
+        }
 
        /* --- Lebih lanjut untuk layar sangat kecil (opsional) --- */
        @media (max-width: 480px) {
