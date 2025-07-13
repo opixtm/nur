@@ -20,50 +20,71 @@
 
     <style>
         /* --- Gaya Responsif untuk Mobile --- */
-        @media (max-width: 768px) {
-            /* Ubah container utama menjadi layout vertikal */
-            .flex.h-screen {
-                flex-direction: column;
-                height: auto; /* Izinkan tinggi halaman menyesuaikan konten */
-            }
+        @/* --- Gaya Responsif untuk Mobile (Perbaikan) --- */
+       @media (max-width: 768px) {
+           body {
+               overflow-x: hidden; /* Mencegah scroll horizontal */
+           }
 
-            /* Jadikan sidebar sebagai header di bagian atas */
-            aside {
-                position: static; /* Hapus posisi fixed */
-                width: 100%;      /* Lebar penuh */
-                height: auto;     /* Tinggi menyesuaikan konten */
-                overflow-y: visible;
-            }
+           /* Layout Utama Flex Column */
+           .flex.h-screen {
+               flex-direction: column;
+               min-height: 100vh; /* Pastikan mengisi tinggi layar */
+           }
 
-            /* Hapus margin kiri pada konten utama agar lebar penuh */
-            main {
-                margin-left: 0;
-                padding: 1rem; /* Kurangi padding agar tidak terlalu sempit */
-            }
+           /* Sidebar sebagai Header */
+           aside {
+               position: sticky; /* Tetap di atas saat di-scroll */
+               top: 0;
+               z-index: 10; /* Pastikan di atas konten lain */
+               width: 100%;
+               height: auto;
+               background-color: inherit; /* Warisi warna latar belakang */
+               padding: 0.5rem 1rem;
+               box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+               display: flex;
+               flex-direction: row;
+               justify-content: space-between; /* Ratakan item */
+               align-items: center;
+           }
 
-            /* Atur ulang tata letak di dalam sidebar */
-            aside .mb-8 {
-                margin-bottom: 1rem; /* Kurangi margin bawah pada judul */
-            }
-            
-            /* Buat navigasi bisa di-scroll secara horizontal */
-            #main-nav {
-                display: flex;
-                flex-direction: row; /* Ubah arah menjadi baris */
-                overflow-x: auto;    /* Aktifkan scroll horizontal */
-                space-y-2: 0;        /* Hapus spasi vertikal */
-                padding-bottom: 0.5rem;
-                -ms-overflow-style: none;  /* Sembunyikan scrollbar di IE dan Edge */
-                scrollbar-width: none;     /* Sembunyikan scrollbar di Firefox */
-            }
-            #main-nav::-webkit-scrollbar {
-                display: none; /* Sembunyikan scrollbar di Chrome, Safari, dan Opera */
-            }
-            #main-nav .nav-item {
-                flex-shrink: 0; /* Cegah item agar tidak menyusut */
-                margin-right: 0.5rem;
-            }
-        }
+           aside #main-nav {
+               display: flex;
+               flex-direction: row;
+               overflow-x: auto;
+               white-space: nowrap; /* Cegah teks wrap */
+               -webkit-overflow-scrolling: touch; /* Scrolling halus di iOS */
+               margin-left: 1rem;
+           }
+
+           aside #main-nav .nav-item {
+               margin-right: 1rem;
+           }
+
+           aside .mb-8 {
+               margin-bottom: 0; /* Hapus margin pada judul di mobile */
+           }
+
+           /* Konten Utama */
+           main {
+               margin-left: 0;
+               padding: 1rem;
+               flex-grow: 1; /* Biarkan konten utama mengisi sisa ruang */
+           }
+
+           /* Sembunyikan ikon "Pe" jika ruang terbatas */
+           aside > div:last-child {
+               display: none; /* Atau atur agar muncul di layar lebih lebar */
+           }
+       }
+
+       /* --- Lebih lanjut untuk layar sangat kecil (opsional) --- */
+       @media (max-width: 480px) {
+           aside #main-nav .nav-item {
+               font-size: 0.85rem;
+               margin-right: 0.75rem;
+           }
+       }
         /* --- Gaya Umum --- */
         body { 
             font-family: 'Inter', sans-serif; 
