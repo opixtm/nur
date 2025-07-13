@@ -89,6 +89,7 @@
                 margin-left: 0 !important;
                 padding: 1rem;
                 flex-grow: 1;
+                padding-top: 5rem; 
             }
 
             /* (7) Atur ulang layout pilar di dashboard */
@@ -779,15 +780,7 @@
                     }
                 });
 
-                const proactiveContainer = panel.querySelector('#proactive-container');
-                const hour = new Date().getHours();
-                let title, emoji, topics;
-                if (hour >= 5 && hour < 11) { title = "Inspirasi Pagi"; emoji = "🌅"; topics = ["Keutamaan Bismillah", "Konsep Rezeki", "Cara Bersyukur"]; } 
-                else if (hour >= 11 && hour < 16) { title = "Pengingat Siang"; emoji = "☀️"; topics = ["Menjaga Amanah", "Menjaga Hati Tetap Tenang", "Istirahat Siang (Qailulah)"]; } 
-                else if (hour >= 16 && hour < 20) { title = "Refleksi Senja"; emoji = "🌇"; topics = ["Muhasabah Diri", "Keutamaan Istighfar", "Zikir petang"]; } 
-                else { title = "Renungan Malam"; emoji = "🌙"; topics = ["Mencari Sakinah", "Kisah para nabi", "Shalat Tahajud"]; }
-                const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-                proactiveContainer.innerHTML = `<div class="bg-gradient-to-r from-green-600 to-emerald-600 p-4 rounded-lg text-white text-center shadow-lg mb-8 animate-fade-in"><h3 class="text-xl font-bold mb-2">${emoji} ${title}</h3><p class="mb-4 text-sm text-white/90">Coba gali lebih dalam:</p><button id="proactive-btn" data-topic="${randomTopic}" class="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-full transition-all text-sm">"${randomTopic}"</button></div>`;
+               
             },
             'unified-search': function() {
                 const panel = document.getElementById('unified-search-panel');
