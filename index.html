@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ensiklopedia Nur v10.1 (Filter Rujukan)</title>
+    <title>Ensiklopedia Nur v10.6 (MicroExpression)</title>
     
     <!-- Tailwind CSS CDN untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -198,7 +198,7 @@
         <aside class="w-64 bg-gray-800/50 p-4 flex flex-col fixed h-full overflow-y-auto">
             <div class="mb-8 text-center">
                 <h1 class="text-2xl font-bold text-white">Ensiklopedia Nur</h1>
-                <p class="text-sm text-emerald-400">v10.1 (Filter Rujukan)</p>
+                <p class="text-sm text-emerald-400">v10.6 (MicroExpression)</p>
             </div>
             <nav id="main-nav" class="flex-grow space-y-2">
                 <button class="nav-item active" data-view="unified-search"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>RESEARCH</button>
@@ -276,10 +276,12 @@
         }
 
 // Variabel untuk menyimpan state analisis video
-let isAnalyzingVideo = false;
-let expressionHistory = [];
-const HISTORY_LENGTH = 15; // Menyimpan histori 15 frame terakhir (sekitar 0.5 detik pada 30fps)
+//let isAnalyzingVideo = false;
+//let expressionHistory = [];
+//const HISTORY_LENGTH = 15; // Menyimpan histori 15 frame terakhir (sekitar 0.5 detik pada 30fps)
 
+// Fungsi generateMicroExpressionReport() Anda yang sudah ada, pastikan bagian finally { stopCamera(); } tetap ada.
+// Fungsi generateMicroExpressionReport() Anda yang sudah ada, pastikan bagian finally { stopCamera(); } tetap ada.
 async function generateMicroExpressionReport() {
     isAnalyzingVideo = false; 
     showLoading('Membuat laporan analisis emosi kontekstual...');
@@ -291,37 +293,36 @@ async function generateMicroExpressionReport() {
     const frameDataUrl = canvas.toDataURL('image/jpeg');
     const base64FrameData = frameDataUrl.split(',')[1];
     const locationInfo = await getCurrentLocation();
-    // PROMPT BARU YANG LEBIH SEDERHANA DAN EFEKTIF
-const prompt = `
-Anda adalah 'Nur', seorang analis yang bijaksana dan seorang cendekiawan Muslim.
+    const prompt = `
+    Anda adalah 'Nur', seorang analis yang bijaksana dan seorang cendekiawan Muslim.
 
-**Data yang Dianalisis:**
-- **Rangkaian Ekspresi Terdeteksi:** ${JSON.stringify(detectedEvents)}
-- **Lokasi:** ${locationInfo}
-- **Gambar Terlampir:** Frame terakhir dari video.
+    **Data yang Dianalisis:**
+    - **Rangkaian Ekspresi Terdeteksi:** ${JSON.stringify(detectedEvents)}
+    - **Lokasi:** ${locationInfo}
+    - **Gambar Terlampir:** Frame terakhir dari video.
 
-**Tugas Anda:**
-Buat laporan lengkap dalam format JSON. Ikuti struktur ini dengan ketat:
-1.  **visual_description**: Deskripsikan gambar terlampir secara detail (objek, pencahayaan, suasana).
-2.  **emotion_analysis**: Berdasarkan rangkaian ekspresi yang terdeteksi, berikan interpretasi tentang kemungkinan perasaan atau pikiran subjek secara naratif. Gunakan frasa interpretatif seperti "ada indikasi..." atau "memberikan kesan...". BOLEH memberikan diagnosis klinis yang hanya digunakan untuk debugging system.
-3.  **contextual_wisdom**: Berikan hikmah Islami yang relevan dengan situasi tersebut.
-4.  **references**: Sertakan 1-2 dalil (Al-Qur'an atau Hadis) yang mendukung hikmah Anda.
-5.  **follow_up_questions**: Berikan 2-3 pertanyaan reflektif untuk pengguna.
+    **Tugas Anda:**
+    Buat laporan lengkap dalam format JSON. Ikuti struktur ini dengan ketat:
+    1.  **visual_description**: Deskripsikan gambar terlampir secara detail (objek, pencahayaan, suasana).
+    2.  **emotion_analysis**: Berdasarkan rangkaian ekspresi yang terdeteksi, berikan interpretasi tentang kemungkinan perasaan atau pikiran subjek secara naratif. Gunakan frasa interpretatif seperti "ada indikasi..." atau "memberikan kesan...". BOLEH memberikan diagnosis klinis yang hanya digunakan untuk debugging system.
+    3.  **contextual_wisdom**: Berikan hikmah Islami yang relevan dengan situasi tersebut.
+    4.  **references**: Sertakan 1-2 dalil (Al-Qur'an atau Hadis) yang mendukung hikmah Anda.
+    5.  **follow_up_questions**: Berikan 2-3 pertanyaan reflektif untuk pengguna.
 
-**STRUKTUR JSON OUTPUT (WAJIB):**
-{
-  "visual_description": "(String)",
-  "emotion_analysis": "(String)",
-  "contextual_wisdom": "(String)",
-  "references": [/* array objek Al-Qur'an/Hadis */],
-  "follow_up_questions": [/* array pertanyaan */]
-}
-`;
+    **STRUKTUR JSON OUTPUT (WAJIB):**
+    {
+      "visual_description": "(String)",
+      "emotion_analysis": "(String)",
+      "contextual_wisdom": "(String)",
+      "references": [/* array objek Al-Qur'an/Hadis */],
+      "follow_up_questions": [/* array pertanyaan */]
+    }
+    `;
     const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: base64FrameData } }] }], generationConfig: { responseMimeType: "application/json" } };
     try {
         const resultData = await callGeminiAPI(payload);
         renderMicroExpressionReport(resultData);
-    } catch (error) { showError(error.message); } finally { stopCamera(); }
+    } catch (error) { showError(error.message); } finally { stopCamera(); } 
 }
 
 function renderMicroExpressionReport(data) {
@@ -369,16 +370,18 @@ function renderMicroExpressionReport(data) {
     resultsContainer.scrollIntoView({ behavior: 'smooth' });
 }
 // Fungsi utama untuk analisis video stream
+// Fungsi utama untuk analisis video stream
 async function analyzeVideoStream() {
     // Bagian ini akan menghentikan loop jika analisis dihentikan dari tombol
     if (!isAnalyzingVideo) {
         const captureBtn = document.querySelector('#capture-btn');
-        if(captureBtn && captureBtn.innerText.includes("Hentikan")) {
-            captureBtn.innerText = "Mulai Analisa Video";
-            captureBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-            captureBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        // Pastikan tombol direset ke status "Mulai Analisa" (biru)
+        if(captureBtn) { 
+            captureBtn.innerText = "Mulai Analisa"; 
+            captureBtn.classList.remove('bg-red-600', 'hover:bg-red-700'); 
+            captureBtn.classList.add('bg-blue-600', 'hover:bg-blue-700'); 
         }
-        return;
+        return; 
     }
 
     const videoEl = document.getElementById('camera-stream');
@@ -388,7 +391,6 @@ async function analyzeVideoStream() {
         const expressions = detection.expressions;
         const currentExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
         
-        // Selalu tambahkan ekspresi terdeteksi ke dalam histori
         expressionHistory.push(currentExpression);
         if (expressionHistory.length > HISTORY_LENGTH) {
             expressionHistory.shift();
@@ -396,35 +398,80 @@ async function analyzeVideoStream() {
 
         const lastEvent = detectedEvents[detectedEvents.length - 1];
 
-        // Hanya catat kejadian unik untuk laporan
         if (!lastEvent || lastEvent.expression !== currentExpression) {
             const timestamp = ((Date.now() - analysisStartTime) / 1000).toFixed(1);
             detectedEvents.push({ expression: currentExpression, timestamp: `${timestamp}s` });
             console.log(detectedEvents);
         }
 
-        // Logika untuk memicu laporan
         const neutralCount = expressionHistory.filter(exp => exp === 'neutral').length;
         if (currentExpression !== 'neutral' && neutralCount > HISTORY_LENGTH * 0.7) {
             console.log(`MICRO EXPRESSION TERDETEKSI: ${currentExpression}. Membuat laporan...`);
-            generateMicroExpressionReport(); // Panggil fungsi untuk membuat laporan lengkap
+            generateMicroExpressionReport(); 
         }
     }
 
-    // Terus panggil fungsi ini untuk menganalisis frame berikutnya
     requestAnimationFrame(analyzeVideoStream);
 }
 
+
         // --- VARIABEL GLOBAL & KONTROL KEAMANAN ---
-        const isSecureContext = window.isSecureContext;
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const hasCameraSupport = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
-        let currentStream;
-        let loadedDatabase = [];
-        let currentReferences = [];
-        let currentReferencePage = 0;
-        const REFERENCES_PER_PAGE_QURAN = 10;
-        const REFERENCES_PER_PAGE_HADITH = 5;
+const isSecureContext = window.isSecureContext;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const hasCameraSupport = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+
+// Variabel-variabel yang perlu diakses secara global
+let currentStream = null; // Inisialisasi ke null
+let isAnalyzingVideo = false;
+let expressionHistory = [];
+const HISTORY_LENGTH = 20; // Menyimpan histori 15 frame terakhir (sekitar 0.5 detik pada 30fps)
+let analysisStartTime = 0;
+let detectedEvents = [];
+
+let loadedDatabase = []; // Pastikan ini juga global
+let currentReferences = []; // Pastikan ini juga global
+let currentReferencePage = 0; // Pastikan ini juga global
+const REFERENCES_PER_PAGE_QURAN = 10; // Pastikan ini juga global
+const REFERENCES_PER_PAGE_HADITH = 5; // Pastikan ini juga global
+
+
+// Fungsi stopCamera dipindahkan ke lingkup global
+const stopCamera = () => {
+    console.log("stopCamera() function called."); // Log untuk diagnostik
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => {
+            track.stop();
+            console.log("Track stopped:", track.kind); // Log setiap track yang dihentikan
+        });
+        currentStream = null; // Penting: Hapus referensi stream
+    }
+    isAnalyzingVideo = false;
+    expressionHistory = [];
+    detectedEvents = []; // Reset detected events saat berhenti
+
+    // Amankan akses ke elemen DOM karena mungkin belum sepenuhnya dimuat atau terlihat
+    const imageControls = document.getElementById('image-controls');
+    const captureControls = document.getElementById('capture-controls');
+    const cameraStream = document.getElementById('camera-stream');
+    const imagePlaceholder = document.getElementById('image-placeholder');
+    const imagePreview = document.getElementById('image-preview');
+    const captureBtn = document.getElementById('capture-btn'); // Ambil referensi tombol di sini
+
+    if (captureBtn) { // Pastikan tombol ada sebelum dimanipulasi
+        captureBtn.innerText = "Ambil Foto";
+        captureBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        captureBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+    }
+    
+    if (imageControls) imageControls.classList.remove('hidden');
+    if (captureControls) captureControls.classList.add('hidden');
+    if (cameraStream) cameraStream.classList.add('hidden');
+    
+    if (imagePlaceholder && imagePreview && !imagePreview.src.startsWith('data:')) {
+        imagePlaceholder.classList.remove('hidden');
+        imagePreview.classList.add('hidden');
+    }
+};
 
         // Cache untuk menyimpan hasil kajian
         const viewCache = {
@@ -432,23 +479,34 @@ async function analyzeVideoStream() {
             image: null
         };
         async function getCurrentLocation() {
-    return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-            resolve("Lokasi tidak didukung oleh browser ini.");
-            return;
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve("Lokasi tidak didukung oleh browser ini.");
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        try {
+                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                            const data = await response.json();
+                            if (data.address) {
+                                const locationString = `${data.address.city || data.address.town || ''}, ${data.address.state || ''}, ${data.address.country || ''}`;
+                                resolve(`Lokasi terdeteksi di sekitar: ${locationString}`);
+                            } else {
+                                resolve(`Lokasi terdeteksi di koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+                            }
+                        } catch (e) {
+                            resolve(`Lokasi terdeteksi di koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)} (gagal mendapatkan nama lokasi)`);
+                        }
+                    },
+                    () => {
+                        resolve("Izin lokasi ditolak oleh pengguna.");
+                    }
+                );
+            });
         }
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                resolve(`Koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
-            },
-            () => {
-                resolve("Izin lokasi ditolak oleh pengguna.");
-            }
-        );
-    });
-}
         // --- INSTRUKSI UTAMA UNTUK AI ---
         const pilar2PromptInstruction = `
         Anda adalah 'Nur', seorang cendekiawan Muslim dengan reputasi tinggi dalam keilmuan Islam. Anda sangat teliti, berhati-hati dalam menyampaikan informasi agama, serta berpegang kuat pada sumber otentik syariat Islam dengan mengedepankan manhaj salim (metode ilmiah yang benar) dalam memahami dan menyampaikan dalil.
@@ -609,7 +667,7 @@ async function analyzeVideoStream() {
                 console.error("Gagal ekspor ke PDF:", error);
                 showError("Terjadi kesalahan saat membuat file PDF.");
             } finally {
-                 if(exportButton) exportButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg><span>Export ke PDF</span>`;
+                 if(exportButton) exportButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg><span>PDF</span>`;
                  detailsElements.forEach((details, index) => { details.open = originalStates[index]; });
             }
         }
@@ -715,7 +773,7 @@ async function analyzeVideoStream() {
                                         </div>
                                         <button id="export-btn" class="flex-shrink-0 ml-4 px-3 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors flex items-center">
                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                            <span>Export ke PDF</span>
+                                            <span>PDF</span>
                                         </button>
                                     </div>
                                     <div id="exportable-content">
@@ -734,7 +792,37 @@ async function analyzeVideoStream() {
             if (!resultsContainer) return;
             const referensiHtml = renderReferensi(data.references);
             const followUpHtml = renderFollowUpQuestions(data.follow_up_questions);
-            const resultHTML = `<div class="bg-gray-800/50 p-8 rounded-lg border border-gray-700 animate-fade-in"><div class="flex justify-between items-start mb-4"><div class="flex-grow"><h2 class="text-2xl font-bold text-white flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><span>Tafsir & Hikmah Visual</span></h2></div><button id="export-btn" class="flex-shrink-0 ml-4 px-3 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg><span>Export ke PDF</span></button></div><div id="exportable-content"><div class="grid md:grid-cols-2 gap-8"><div class="space-y-4"><div><h3 class="text-lg font-semibold text-emerald-400">Deskripsi Gambar</h3><p>${data.description}</p></div><div><h3 class="text-lg font-semibold text-emerald-400">Pelajaran & Hikmah</h3><p>${data.wisdom}</p></div></div><img src="${imageSrc}" class="rounded-lg object-cover w-full h-auto"/></div><div class="mt-8">${referensiHtml}</div></div>${followUpHtml}</div>`;
+            // Perhatikan penambahan kelas 'w-full' dan 'max-w-full' di div terluar hasil analisa
+            const resultHTML = `<div class="bg-gray-800/50 p-8 rounded-lg border border-gray-700 animate-fade-in w-full max-w-full">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="flex-grow">
+                                            <h2 class="text-2xl font-bold text-white flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                <span>Tafsir & Hikmah Visual</span>
+                                            </h2>
+                                        </div>
+                                        <button id="export-btn" class="flex-shrink-0 ml-4 px-3 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors flex items-center">
+                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                            <span>PDF</span>
+                                        </button>
+                                    </div>
+                                    <div id="exportable-content">
+                                        <div class="grid grid-cols-1 gap-8">
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <h3 class="text-lg font-semibold text-emerald-400">Deskripsi Gambar</h3>
+                                                    <p class="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">${data.description}</p>
+                                                </div>
+                                                <div>
+                                                    <h3 class="text-lg font-semibold text-emerald-400">Pelajaran & Hikmah</h3>
+                                                    <p class="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">${data.wisdom}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-8">${referensiHtml}</div>
+                                    </div>
+                                    ${followUpHtml}
+                                </div>`;
             viewCache.image = resultHTML;
             resultsContainer.innerHTML = resultHTML;
         }
@@ -880,7 +968,7 @@ async function analyzeVideoStream() {
             'unified-search': function() {
                 const panel = document.getElementById('unified-search-panel');
                 if (!panel) return;
-                panel.innerHTML = `<form id="unified-search-form" class="relative"><textarea id="unified-search-input" rows="5" placeholder="Ketik topik, pertanyaan, atau referensi (misal: QS. Al-Baqarah: 183, HR. Bukhari tentang niat)..." class="w-full p-4 pr-12 bg-gray-800 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea><button type="button" class="dictation-btn absolute top-4 right-4 text-gray-400 hover:text-emerald-400" data-target="unified-search-input"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><button type="submit" class="mt-4 w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Jalankan Pencarian</button><div class="mt-4 flex items-center justify-center space-x-6"><label for="filter-quran" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-quran" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Al-Qur'an</span></label><label for="filter-hadith" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-hadith" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Hadis</span></label></div></form>`;
+                panel.innerHTML = `<form id="unified-search-form" class="relative"><textarea id="unified-search-input" rows="5" placeholder="Ketik topik, pertanyaan, atau referensi (misal: QS. Al-Baqarah: 183, HR. Bukhari tentang niat)..." class="w-full p-4 pr-12 bg-gray-800 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea><button type="button" class="dictation-btn absolute top-4 right-4 text-gray-400 hover:text-emerald-400" data-target="unified-search-input"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><button type="submit" class="mt-4 w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">SEARCH</button><div class="mt-4 flex items-center justify-center space-x-6"><label for="filter-quran" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-quran" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Al-Qur'an</span></label><label for="filter-hadith" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-hadith" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Hadis</span></label></div></form>`;
                 panel.querySelector('#unified-search-form').addEventListener('submit', (e) => {
                     e.preventDefault();
                     const query = panel.querySelector('#unified-search-input').value.trim();
@@ -889,25 +977,18 @@ async function analyzeVideoStream() {
             },
             // GANTI SELURUH FUNGSI image: function() { ... } DENGAN KODE LENGKAP INI
 
+// GANTI SELURUH FUNGSI image: function() { ... } DENGAN KODE LENGKAP INI
 image: function() {
     const panel = document.getElementById('image-panel');
     if (!panel) return;
-    panel.innerHTML = `<h2 class="text-3xl font-bold text-white mb-6">Hikmah Gambar</h2><div class="max-w-md mx-auto text-center"><div id="image-display-area" class="mb-4 h-64 bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden"><p id="image-placeholder" class="text-gray-500">Pilih gambar atau gunakan kamera</p><img id="image-preview" src="" class="hidden max-h-full max-w-full rounded-lg"/><video id="camera-stream" class="hidden w-full h-full object-cover" autoplay></video></div><canvas id="camera-canvas" class="hidden"></canvas><div id="image-controls" class="space-y-2"><div class="space-y-2"><div class="flex space-x-2"><button id="upload-btn" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Upload Gambar</button><button id="camera-btn" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors">Gunakan Kamera (Foto)</button></div><button id="micro-expression-btn" class="w-full px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 5.555a1 1 0 00-1.9 1.11l1.018 3.156a.5.5 0 01-.444.679H8a1 1 0 100 2h1.632a.5.5 0 01.444.679l-1.018 3.155a1 1 0 101.9 1.11l1.544-4.78a.5.5 0 010-.222L9.555 5.555z" clip-rule="evenodd" /></svg>Deteksi Ekspresi Mikro (Video)</button></div></div><div id="capture-controls" class="hidden space-y-2"><button id="capture-btn" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">Ambil Foto</button><button id="switch-camera-btn" class="w-full text-sm py-2 text-gray-300 hover:text-white transition-colors">Kamera Belakang</button><button id="cancel-camera-btn" class="w-full text-sm text-gray-400 hover:text-white transition-colors">Batal</button></div><input type="file" id="image-input" class="hidden" accept="image/*"/></div>`;
+    panel.innerHTML = `<div class="max-w-md mx-auto text-center"><div id="image-display-area" class="mb-4 h-64 bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden"><p id="image-placeholder" class="text-gray-500">VIEW FINDER</p><img id="image-preview" src="" class="hidden max-h-full max-w-full rounded-lg"/><video id="camera-stream" class="hidden w-full h-full object-cover" autoplay></video></div><canvas id="camera-canvas" class="hidden"></canvas><div id="image-controls" class="space-y-2"><div class="space-y-2"><div class="flex space-x-2"><button id="upload-btn" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Upload Gambar</button><button id="camera-btn" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors">Photo Capture</button></div><button id="micro-expression-btn" class="w-full px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 5.555a1 1 0 00-1.9 1.11l1.018 3.156a.5.5 0 01-.444.679H8a1 1 0 100 2h1.632a.5.5 0 01.444.679l-1.018 3.155a1 1 0 101.9 1.11l1.544-4.78a.5.5 0 010-.222L9.555 5.555z" clip-rule="evenodd" /></svg>Deteksi Ekspresi Mikro (Video)</button></div></div><div id="capture-controls" class="hidden space-y-2"><button id="capture-btn" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">Ambil Foto</button><button id="switch-camera-btn" class="w-full text-sm py-2 text-gray-300 hover:text-white transition-colors">Kamera Belakang</button><button id="cancel-camera-btn" class="w-full text-sm text-gray-400 hover:text-white transition-colors">Batal</button></div><input type="file" id="image-input" class="hidden" accept="image/*"/></div>`;
     
+    // Variabel-variabel ini diambil dari lingkup global, tidak dideklarasikan ulang di sini.
     const imageInput = panel.querySelector('#image-input'), uploadBtn = panel.querySelector('#upload-btn'), cameraBtn = panel.querySelector('#camera-btn'), imagePreview = panel.querySelector('#image-preview'), imagePlaceholder = panel.querySelector('#image-placeholder'), cameraStream = panel.querySelector('#camera-stream'), cameraCanvas = panel.querySelector('#camera-canvas'), imageControls = panel.querySelector('#image-controls'), captureControls = panel.querySelector('#capture-controls'), captureBtn = panel.querySelector('#capture-btn'), cancelCameraBtn = panel.querySelector('#cancel-camera-btn'), microExpressionBtn = panel.querySelector('#micro-expression-btn'), switchCameraBtn = panel.querySelector('#switch-camera-btn');
-    let currentFacingMode = 'user';
+    let currentFacingMode = 'user'; // Ini boleh tetap lokal jika hanya digunakan di sini
 
-    const stopCamera = () => {
-        if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
-        isAnalyzingVideo = false;
-        imageControls.classList.remove('hidden');
-        captureControls.classList.add('hidden');
-        cameraStream.classList.add('hidden');
-        if (!imagePreview.src.startsWith('data:')) { 
-            imagePlaceholder.classList.remove('hidden');
-            imagePreview.classList.add('hidden');
-        }
-    };
+    // Fungsi stopCamera sudah global, jadi tidak ada definisi di sini
+    // Variabel isAnalyzingVideo, expressionHistory juga sudah global.
 
     async function startCamera(facingMode) {
         if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
@@ -988,53 +1069,61 @@ image: function() {
     });
 
     if (hasCameraSupport && isSecureContext) {
+        // Event listener untuk tombol "Photo Capture"
         cameraBtn.addEventListener('click', () => {
             captureBtn.innerText = "Ambil Foto";
+            // Set capture button to red for photo mode
+            captureBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700'); 
+            captureBtn.classList.add('bg-red-600', 'hover:bg-red-700');    
             captureBtn.onclick = () => {
                 cameraCanvas.width = cameraStream.videoWidth;
                 cameraCanvas.height = cameraStream.videoHeight;
                 cameraCanvas.getContext('2d').drawImage(cameraStream, 0, 0);
                 const imageDataUrl = cameraCanvas.toDataURL('image/jpeg');
-                const base64Data = imageDataUrl.split(',')[1];
                 imagePreview.src = imageDataUrl;
                 imagePreview.classList.remove('hidden');
-                stopCamera();
-                analyzeImage(base64Data, 'image/jpeg');
+                stopCamera(); // Pastikan kamera berhenti setelah ambil foto
+                analyzeImage(imageDataUrl.split(',')[1], 'image/jpeg');
             };
-            captureBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            captureBtn.classList.add('bg-red-600', 'hover:bg-red-700');
             startCamera(currentFacingMode);
         });
 
+        // Event listener untuk tombol "Deteksi Ekspresi Mikro (Video)"
         microExpressionBtn.addEventListener('click', () => {
             captureBtn.innerText = "Mulai Analisa";
+            // Set capture button to blue for micro-expression mode initially
+            captureBtn.classList.remove('bg-red-600', 'hover:bg-red-700'); 
+            captureBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');  
             captureBtn.onclick = () => {
                 if (!isAnalyzingVideo) {
                     isAnalyzingVideo = true;
                     detectedEvents = [];
                     analysisStartTime = Date.now();
                     captureBtn.innerText = "Hasilkan Laporan";
-                    captureBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    captureBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    // Change capture button to red when analysis starts
+                    captureBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700'); 
+                    captureBtn.classList.add('bg-red-600', 'hover:bg-red-700'); 
                     analyzeVideoStream();
                 } else {
+                    // Ini akan dipanggil saat tombol "Hasilkan Laporan" di-klik
                     generateMicroExpressionReport();
                 }
             };
-            captureBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-            captureBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
             startCamera(currentFacingMode);
         });
 
+        // Event listener untuk ganti kamera
         switchCameraBtn.addEventListener('click', () => {
             currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
             startCamera(currentFacingMode);
         });
+
     } else {
         cameraBtn.classList.add('secure-feature-disabled');
         microExpressionBtn.classList.add('secure-feature-disabled');
     }
     
+    // Listener untuk tombol Batal
     cancelCameraBtn.addEventListener('click', stopCamera);
 },
             settings: function() {
