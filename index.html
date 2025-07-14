@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ensiklopedia Nur v10.v10.5 (View & Prompt Upgrades)</title>
+    <title>Ensiklopedia Nur v10.1 (Filter Rujukan)</title>
     
     <!-- Tailwind CSS CDN untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,6 +17,7 @@
     <!-- Library untuk Export PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <style>
         /* --- Gaya Responsif Mobile (Versi NON-STICKY) --- */
@@ -197,12 +198,12 @@
         <aside class="w-64 bg-gray-800/50 p-4 flex flex-col fixed h-full overflow-y-auto">
             <div class="mb-8 text-center">
                 <h1 class="text-2xl font-bold text-white">Ensiklopedia Nur</h1>
-                <p class="text-sm text-emerald-400">v10.5 (View & Prompt Upgrades)</p>
+                <p class="text-sm text-emerald-400">v10.1 (Filter Rujukan)</p>
             </div>
             <nav id="main-nav" class="flex-grow space-y-2">
-                <button class="nav-item active" data-view="unified-search"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>Pencarian & Riset</button>
-                <button class="nav-item" data-view="image"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>Hikmah Gambar</button>
-                <button class="nav-item" data-view="settings"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.075.124a6.57 6.57 0 01-.22.127c-.332.183-.582.495-.645.87l-.213 1.281c-.09.542-.56.94-1.11-.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.003-.827c.293.24.438.613-.438.995s-.145-.755-.438-.995l-1.003-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37.49l1.217.456c.355.133.75.072 1.075-.124.072-.044.146-.087.22-.127.332-.183.582.495.645-.87l.213-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>Pengaturan</button>
+                <button class="nav-item active" data-view="unified-search"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>RESEARCH</button>
+                <button class="nav-item" data-view="image"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>HIKMAH VISUAL</button>
+                <button class="nav-item" data-view="settings"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.075.124a6.57 6.57 0 01-.22.127c-.332.183-.582.495-.645.87l-.213 1.281c-.09.542-.56.94-1.11-.94h-2.593c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.003-.827c.293.24.438.613-.438.995s-.145-.755-.438-.995l-1.003-.827a1.125 1.125 0 01-.26-1.431l1.296-2.247a1.125 1.125 0 011.37.49l1.217.456c.355.133.75.072 1.075-.124.072-.044.146-.087.22-.127.332-.183.582.495.645-.87l.213-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>SETTINGS</button>
             </nav>
         </aside>
 
@@ -217,9 +218,59 @@
     </div>
 
     <script>
+        async function getCurrentLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve("Lokasi tidak didukung oleh browser ini.");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                // Menggunakan API gratis untuk mengubah koordinat menjadi nama lokasi
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await response.json();
+                    if (data.address) {
+                        const locationString = `${data.address.city || data.address.town || ''}, ${data.address.state || ''}, ${data.address.country || ''}`;
+                        resolve(`Lokasi terdeteksi di sekitar: ${locationString}`);
+                    } else {
+                        resolve(`Lokasi terdeteksi di koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+                    }
+                } catch (e) {
+                    resolve(`Lokasi terdeteksi di koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)} (gagal mendapatkan nama lokasi)`);
+                }
+            },
+            () => {
+                resolve("Izin lokasi ditolak oleh pengguna.");
+            }
+        );
+    });
+}
+        // Di bagian atas blok <script> utama Anda
+        async function loadFaceApiModels() {
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model'; // Lokasi model
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+                console.log('Model Face Recognition berhasil dimuat.');
+            } catch (error) {
+                console.error('Gagal memuat model Face Recognition:', error);
+                showError('Gagal memuat fitur pengenalan wajah. Coba refresh halaman.');
+            }
+        }
+
+// Panggil fungsi ini di dalam event listener DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    loadFaceApiModels(); // Muat model saat halaman siap
+    // ... sisa kode Anda ...
+});
         // --- DATA STATIS ---
-        // const rukunIslam = ["Syahadat", "Shalat", "Puasa", "Zakat", "Haji"];
-        // const rukunIman = ["Iman kepada Allah", "Iman kepada Malaikat", "Iman kepada Kitab", "Iman kepada Rasul", "Iman kepada Hari Akhir", "Iman kepada Qada & Qadar"];
+        const rukunIslam = ["Syahadat", "Shalat", "Puasa", "Zakat", "Haji"];
+        const rukunIman = ["Iman kepada Allah", "Iman kepada Malaikat", "Iman kepada Kitab", "Iman kepada Rasul", "Iman kepada Hari Akhir", "Iman kepada Qada & Qadar"];
         
         // --- VARIABEL GLOBAL & KONTROL KEAMANAN ---
         const isSecureContext = window.isSecureContext;
@@ -254,61 +305,32 @@
 
         // Instruksi utama untuk Pilar 2 (Validitas & Hierarki Rujukan)
         const pilar2PromptInstruction = `
-Anda adalah ‘Nur’, seorang cendekiawan Muslim dengan reputasi tinggi dalam keilmuan Islam. Anda sangat teliti, berhati-hati dalam menyampaikan informasi agama, serta berpegang kuat pada sumber otentik syariat Islam dengan mengedepankan manhaj salim (metode ilmiah yang benar) dalam memahami dan menyampaikan dalil.
+        Anda adalah 'Nur', seorang cendekiawan Muslim dengan reputasi tinggi dalam keilmuan Islam. Anda sangat teliti, berhati-hati dalam menyampaikan informasi agama, serta berpegang kuat pada sumber otentik syariat Islam dengan mengedepankan manhaj salim (metode ilmiah yang benar) dalam memahami dan menyampaikan dalil.
 
-PRINSIP UTAMA ANDA:
+        PRINSIP UTAMA 'NUR'
 
-1. ✅ Validitas dan Kualitas Dalil:
-   - WAJIB menyandarkan seluruh jawaban pada dalil yang sahih atau minimal hasan.
-   - TERLARANG KERAS menggunakan hadits dha'if (lemah) atau maudhu’ (palsu) sebagai argumen atau rujukan utama.
-   - Jika ditemukan hadits dha'if dalam tradisi populer, beri penjelasan bahwa hadits tersebut tidak dapat dijadikan hujjah, dan tawarkan alternatif dari dalil yang sahih atau hasan.
+        1. Validitas dan Kualitas Dalil
+        WAJIB menyandarkan seluruh jawaban pada dalil yang sahih atau minimal hasan.
+        TERLARANG KERAS menggunakan hadits dha'if (lemah) atau maudhu (palsu) sebagai argumen atau rujukan utama.
+        Jika ditemukan hadits dha'if dalam tradisi populer, beri penjelasan bahwa hadits tersebut tidak dapat dijadikan hujjah, dan tawarkan alternatif dari dalil yang sahih atau hasan.
+        2. Hierarki Dalil & Urutan Prioritas
+        Seluruh argumen dan penjelasan harus mengikuti urutan hierarki berikut:
 
-2. 🏛️ Hierarki Dalil & Urutan Prioritas:
-   Seluruh argumen dan penjelasan harus mengikuti urutan hierarki berikut:
+        Urutan Prioritas Dalil:
 
-   - Al-Qur’an
-   - Hadits Shahih/Hasan
-   - Qiyas
-   - Ijma'
-   - Analogi/Akal/Generatif AI (hanya jika mendukung dalil primer)
-
-   Catatan:
-   * Untuk setiap analisa/kajian, minimal harus memiliki rujukan dari Al-Qur'an atau Hadits.
-   * Analisa bisa menyertakan Ijma' dan Qiyas, dan bahkan bersifat generatif (penjelasan/analogi AI), TAPI ini HANYA boleh sebagai pelengkap dan harus didasarkan pada dan mendukung rujukan primer.
-   * Jika Ijma' atau Qiyas diperlukan, jelaskan bahwa ini adalah ranah ijtihad/analogi dan bukan dalil primer.
-
-3. 📘 Format Rujukan:
-   Untuk setiap rujukan, ikuti format berikut:
-
-   - Jika "Quran":
-     {
-       "type": "Quran",
-       "reference_text": "(QS. Nama Surah: Ayat)",
-       "text": "(Teks Arab) - (Terjemahan Indonesia)",
-       "tafsir": {
-         "source": "(Contoh: Tafsir Ibn Katsir)",
-         "content": "(Penjelasan isi ayat menurut tafsir tersebut)"
-       },
-       "asbabun_nuzul": {
-         "source": "(Contoh: Asbabun Nuzul oleh Imam as-Suyuthi)",
-         "content": "(Penjelasan sebab turunnya ayat jika ada. Jika tidak ada, berikan konteks umum surah)"
-       }
-     }
-
-   - Jika "Hadith":
-     {
-       "type": "Hadith",
-       "text_arabic": "(Teks Arab Hadits)",
-       "text_translation": "(Terjemahan Indonesia)",
-       "grade": "(Sahih / Hasan)",
-       "source": "(Contoh: HR. Bukhari no. 123 / HR. Muslim no. 456 / HR. Tirmidzi no. 789)"
-     }
-
-ETOS ILMIAH:
-- ‘Nur’ tidak hanya menjawab — ia mendidik. Jawaban harus disampaikan dengan hikmah, adab ilmiah, dan kerendahan hati.
-- Tujuan utama adalah meluruskan pemahaman umat berdasarkan dalil yang sahih, bukan membenarkan prasangka.
+        Al-Qur'an
+        Hadits Shahih/Hasan
+        Qiyas
+        Ijma
+        
+        Analogi/Akal/Generatif AI (hanya jika mendukung dalil primer)
+        Catatan:
+        Qiyas dan Ijma' hanya boleh digunakan sebagai pendukung, bukan landasan utama.
+        Jika digunakan, wajib diberi keterangan bahwa ini termasuk ijtihad dan bukan dalil qat'i (pasti).
+        3.  **Format Rujukan:** Untuk setiap rujukan, ikuti format ini:
+            - Jika "Quran": Berikan objek dengan properti "type":"Quran", "reference_text":"(QS. Nama Surah: Ayat)", "text":"(Teks Arab diikuti terjemahan)", "tafsir":{"source":"(Nama Kitab Tafsir)", "content":"(Isi tafsir)"}, dan "asbabun_nuzul":{"source":"(Nama Kitab Asbabun Nuzul)", "content":"(Isi detail asbabun nuzul. Jika tidak ada, jelaskan konteks umum surah)"}.
+            - Jika "Hadith": Berikan objek dengan properti "type":"Hadith", "text_arabic":"(Teks Arab)", "text_translation":"(Terjemahan Indonesia)", "grade":"(Sahih atau Hasan)", "source":"(Contoh: HR. Bukhari no. 123)"}.
 `;
-
         
         // --- FUNGSI UTILITAS & API ---
         function showLoading(message, targetId = 'results-container') {
@@ -598,7 +620,7 @@ ETOS ILMIAH:
             if (!resultsContainer) return;
             const referensiHtml = renderReferensi(data.references);
             const followUpHtml = renderFollowUpQuestions(data.follow_up_questions);
-            const resultHTML = `<div class="bg-gray-800/50 p-8 rounded-lg border border-gray-700 animate-fade-in"><div class="flex justify-between items-start mb-4"><div class="flex-grow"><h2 class="text-2xl font-bold text-white flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><span>Tafsir Visual & Hikmah Gambar</span></h2></div><button id="export-btn" class="flex-shrink-0 ml-4 px-3 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg><span>Export ke PDF</span></button></div><div id="exportable-content"><div class="grid md:grid-cols-2 gap-8"><div class="space-y-4"><div><h3 class="text-lg font-semibold text-emerald-400">Deskripsi Gambar</h3><p>${data.description}</p></div><div><h3 class="text-lg font-semibold text-emerald-400">Pelajaran & Hikmah</h3><p>${data.wisdom}</p></div></div><img src="${imageSrc}" class="rounded-lg object-cover w-full h-auto"/></div><div class="mt-8">${referensiHtml}</div></div>${followUpHtml}</div>`;
+            const resultHTML = `<div class="bg-gray-800/50 p-8 rounded-lg border border-gray-700 animate-fade-in"><div class="flex justify-between items-start mb-4"><div class="flex-grow"><h2 class="text-2xl font-bold text-white flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><span>Tafsir & Hikmah Visual</span></h2></div><button id="export-btn" class="flex-shrink-0 ml-4 px-3 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg><span>Export ke PDF</span></button></div><div id="exportable-content"><div class="grid md:grid-cols-2 gap-8"><div class="space-y-4"><div><h3 class="text-lg font-semibold text-emerald-400">Deskripsi Gambar</h3><p>${data.description}</p></div><div><h3 class="text-lg font-semibold text-emerald-400">Pelajaran & Hikmah</h3><p>${data.wisdom}</p></div></div><img src="${imageSrc}" class="rounded-lg object-cover w-full h-auto"/></div><div class="mt-8">${referensiHtml}</div></div>${followUpHtml}</div>`;
             
             viewCache.image = resultHTML;
             resultsContainer.innerHTML = resultHTML;
@@ -618,158 +640,109 @@ ETOS ILMIAH:
         }
 
         async function runQuickAnswerRAG(query) {
-            const resultsContainer = document.getElementById('results-container');
-            if (!resultsContainer) return;
-            
-            showLoading('Mencari ilmu dan rujukan lengkap dari Al-Qur\'an dan Hadis...', 'results-container');
-            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+    const resultsContainer = document.getElementById('results-container');
+    if (!resultsContainer) return;
+    
+    showLoading('Mencari ilmu dan rujukan lengkap dari Al-Qur\'an dan Hadis...', 'results-container');
+    resultsContainer.scrollIntoView({ behavior: 'smooth' });
 
-            // Menjalankan proses berat di dalam setTimeout agar UI tidak freeze
-            setTimeout(async () => {
-                const searchQuran = document.getElementById('filter-quran')?.checked ?? true;
-                const searchHadith = document.getElementById('filter-hadith')?.checked ?? true;
+    setTimeout(async () => {
+        const searchQuran = document.getElementById('filter-quran')?.checked ?? true;
+        const searchHadith = document.getElementById('filter-hadith')?.checked ?? true;
 
-                if (!searchQuran && !searchHadith) {
-                    showError("Anda harus memilih minimal satu sumber rujukan (Al-Qur'an atau Hadis) untuk melakukan pencarian.");
-                    return;
-                }
-
-                const relevantDocuments = await findRelevantDocuments(query, 15, { searchQuran, searchHadith });
-                
-                let contextText = "";
-                let referenceObjects = [];
-
-                if (relevantDocuments.length > 0) {
-                    contextText += "BERIKUT ADALAH RUJUKAN PRIMER (AL QUR'AN/HADIS) YANG RELEVAN DARI DATABASE LOKAL. GUNAKAN INI SEBAGAI DASAR UTAMA JAWABAN ANDA:\n\n";
-                    relevantDocuments.forEach(doc => {
-                        if (doc.type === 'Quran') {
-                            contextText += `[Qur'an] ${doc.source}: "${doc.translation}"\n`;
-                            referenceObjects.push({
-                                type: "Quran",
-                                reference_text: doc.source,
-                                text: doc.text, 
-                                translation: doc.translation,
-                                tafsir: doc.tafsir || { source: "Tidak tersedia", content: "Tidak ada tafsir spesifik untuk ayat ini dalam database lokal." },
-                                asbabun_nuzul: doc.asbabun_nuzul || { source: "Tidak tersedia", content: "Tidak ada asbabun nuzul spesifik untuk ayat ini dalam database lokal." }
-                            });
-                        } else if (doc.type === 'Hadith') {
-                            contextText += `[Hadis] ${doc.source}: "${doc.translation}" (Grade: ${doc.grade || 'Tidak diketahui'})\n`;
-                            referenceObjects.push({
-                                type: "Hadith",
-                                text_arabic: doc.text, 
-                                text_translation: doc.translation, 
-                                grade: doc.grade || "Tidak diketahui",
-                                source: doc.source
-                            });
-                        }
-                    });
-                    contextText += "\n";
-                } else {
-                    contextText += "TIDAK DITEMUKAN RUJUKAN LANGSUNG DARI AL-QUR'AN ATAU HADIS DALAM DATABASE LOKAL YANG SANGAT RELEVAN UNTUK KUERIMU. JAWABAN AKAN LEBIH BERSIFAT GENERATIF BERDASARKAN PEMAHAMAN AI. INGATLAH BAHWA DALIL PRIMER ADALAH FONDASI ILMU.\n\n";
-                }
-
-                const prompt = `${pilar2PromptInstruction}
-
-                    **TOPIK ANALISIS:** "${query}"
-                    
-                    **KONTEKS RUJUKAN PRIMER DARI DATABASE LOKAL (AL-QUR'AN & HADIS):**
-                    ${contextText}
-                    
-                    **INSTRUKSI JAWABAN:**
-                    Sebagai seorang cendekiawan Muslim 'Nur', analisis dan jawablah topik "${query}" **berdasarkan sepenuhnya pada KONTEKS RUJUKAN PRIMER** yang diberikan di atas.
-                    
-                    - Jika **rujukan primer TIDAK mencukupi** untuk menjawab secara langsung, nyatakan secara eksplisit bahwa **tidak ditemukan dalil yang memadai**. Setelah itu, Anda boleh menggunakan **analisis ijtihad (Qiyas, Ijma’, atau generatif AI)** **dengan catatan bahwa ini bukan dalil primer** dan masih membutuhkan verifikasi lanjutan dari ahli syar’i.
-                    - **Prioritaskan penyebutan dalil:** Dahulukan Al-Qur'an, lalu Hadis.
-                    - Jangan menarik kesimpulan yang tidak bersumber dari dalil yang tersedia.
-                    - Jawaban harus **objektif, teliti, ilmiah, dan tidak bersifat fatwa pribadi**.
-                    
-                    **FORMAT OUTPUT (WAJIB JSON):**
-                    Berikan jawaban dalam struktur JSON berikut:
-                    
-                    {
-                      "query": "${query}",
-                      "summary": "Berikan kesimpulan ilmiah berdasarkan dalil. Jika perlu, tambahkan keterangan bahwa sebagian analisis bersifat ijtihad jika dalil primer tidak ditemukan.",
-                      "references": [
-                        /* Objek-objek dalil Al-Qur’an dan Hadis yang digunakan */
-                        /* Format objek sudah ditentukan dalam pilar2PromptInstruction */
-                      ],
-                      "follow_up_questions": [
-                        "Pertanyaan lanjutan untuk memperdalam bahasan",
-                        "Pertanyaan untuk menjangkau sisi praktis dari tema ini",
-                        "Pertanyaan yang mendorong eksplorasi lanjutan secara ilmiah"
-                      ]
-                    }
-                    `;
-
-
-                const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
-
-                try {
-                    const resultData = await callGeminiAPI(payload);
-                    
-                    if (referenceObjects.length > 0) {
-                        resultData.references = referenceObjects;
-                        renderSearchResults(resultData, 'verified');
-                    } else {
-                        const generativePrompt = `${pilar2PromptInstruction}
-
-                            Anda diminta untuk menganalisis topik: "${query}".
-                            
-                            **PERHATIAN:**
-                            Database lokal tidak menyediakan rujukan langsung dari Al-Qur'an atau Hadis untuk topik ini. Oleh karena itu, jawaban Anda harus dianggap sebagai **analisis generatif berbasis AI**, yang bersifat **ijtihadi** dan **belum dapat dijadikan rujukan syar'i final**.
-                            
-                            - Sebutkan secara eksplisit bahwa jawaban ini disusun dengan metode **ijtihad, qiyas, atau pendekatan analogi** berdasarkan kaidah umum dalam syariat Islam.
-                            - TEGASKAN bahwa setiap kesimpulan **masih memerlukan verifikasi lebih lanjut oleh ulama yang berwenang** sebelum dijadikan pegangan dalam fatwa, hukum, atau amal.
-                            - Hindari sikap mutlak dalam penarikan kesimpulan. Utamakan pendekatan ilmiah dan adab dalam menyampaikan keterbatasan data.
-                            
-                            **FORMAT OUTPUT (WAJIB JSON):**
-                            Berikan jawaban dalam format berikut:
-                            
-                            {
-                              "query": "${query}",
-                              "summary": "Penjelasan hasil analisa ijtihadi berdasarkan prinsip-prinsip umum syariah. Nyatakan bahwa tidak ada dalil langsung dari Qur’an/Hadits.",
-                              "references": [],
-                              "follow_up_questions": [
-                                "Apa pendekatan ijtihad yang paling sahih menurut ulama dalam topik ini?",
-                                "Apakah ada indikasi umum dalam Al-Qur'an/Hadis yang dapat dikaitkan secara qiyasi?",
-                                "Bagaimana pendapat mazhab-mazhab utama terhadap isu ini?"
-                              ]
-                            }
-                            `;
-
-                        
-                        const generativePayload = { contents: [{ parts: [{ text: generativePrompt }] }], generationConfig: { responseMimeType: "application/json" } };
-                        const generativeResult = await callGeminiAPI(generativePayload);
-                        renderSearchResults(generativeResult, 'generative');
-                    }
-                    
-                } catch (error) {
-                    showError(error.message, 'results-container');
-                }
-            }, 0);
+        if (!searchQuran && !searchHadith) {
+            showError("Anda harus memilih minimal satu sumber rujukan (Al-Qur'an atau Hadis) untuk melakukan pencarian.");
+            return;
         }
+
+        const relevantDocuments = await findRelevantDocuments(query, 15, { searchQuran, searchHadith });
+        
+        let contextText = "";
+        let referenceObjects = [];
+
+        if (relevantDocuments.length > 0) {
+            relevantDocuments.forEach(doc => {
+                if (doc.type === 'Quran') {
+                    contextText += `[Qur'an] ${doc.source}: "${doc.translation}"\n`;
+                    referenceObjects.push({
+                        type: "Quran",
+                        reference_text: doc.source,
+                        text: doc.text, 
+                        translation: doc.translation,
+                        tafsir: doc.tafsir || { source: "Akan digenerasi AI", content: "Sedang mencari..." },
+                        asbabun_nuzul: doc.asbabun_nuzul || { source: "Akan digenerasi AI", content: "Sedang mencari..." }
+                    });
+                } else if (doc.type === 'Hadith') {
+                    contextText += `[Hadis] ${doc.source}: "${doc.translation}" (Grade: ${doc.grade || 'Tidak diketahui'})\n`;
+                    referenceObjects.push({
+                        type: "Hadith",
+                        text_arabic: doc.text, 
+                        text_translation: doc.translation, 
+                        grade: doc.grade || "Tidak diketahui",
+                        source: doc.source
+                    });
+                }
+            });
+        }
+
+        // --- Perubahan Logika Prompt Dimulai Di Sini ---
+        let promptContextSection = "";
+        if (contextText) {
+            promptContextSection = `
+**KONTEKS RUJUKAN PRIMER DARI DATABASE LOKAL (AL-QUR'AN & HADIS):**
+${contextText}
+`;
+        }
+        
+        const prompt = `${pilar2PromptInstruction}
+            ${promptContextSection}
+            **INSTRUKSI JAWABAN:**
+            Sebagai seorang cendekiawan Muslim 'Nur', analisis dan jawablah topik "${query}" menggunakan KONTEKS RUJUKAN PRIMER sebagai dasar utama (jika tersedia).
+            
+            PENTING: Untuk setiap rujukan Al-Qur'an yang kamu kutip, CARI dan SERTAKAN TAFSIR (utamakan dari Tafsir Ibn Katsir, Al-Muyassar, atau Jalalayn) dan ASBABUN NUZUL (jika ada) dari pengetahuanmu yang luas. Jika tidak ada rujukan primer dari konteks, kamu bebas mencari rujukan dari pengetahuanmu sendiri.
+            
+            - Jika pada akhirnya tidak ada dalil yang relevan sama sekali, nyatakan secara eksplisit.
+            - Jawaban harus objektif, teliti, ilmiah, dan tidak bersifat fatwa pribadi.
+            
+            Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}
+            `;
+        // --- Akhir Perubahan Logika Prompt ---
+
+
+        const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+
+        try {
+            const resultData = await callGeminiAPI(payload);
+            
+            // Jika ada rujukan dari database lokal, gunakan itu. Jika tidak, gunakan rujukan dari AI.
+            if (referenceObjects.length > 0) {
+                // Cocokkan tafsir/asbabun nuzul dari AI ke referensi lokal
+                resultData.references.forEach(aiRef => {
+                    const localRef = referenceObjects.find(lr => lr.reference_text && lr.reference_text.includes(aiRef.reference_text.split(':')[0]));
+                    if (localRef) {
+                        localRef.tafsir = aiRef.tafsir;
+                        localRef.asbabun_nuzul = aiRef.asbabun_nuzul;
+                    }
+                });
+                resultData.references = referenceObjects;
+                renderSearchResults(resultData, 'verified');
+            } else {
+                // Langsung render hasil dari AI jika tidak ada data lokal
+                renderSearchResults(resultData, 'generative');
+            }
+            
+        } catch (error) {
+            showError(error.message, 'results-container');
+        }
+    }, 0);
+}
         // --- FUNGSI PENCARIAN CERDAS (VERSI BARU) ---
         async function findRelevantDocuments(query, limit = 15, options = { searchQuran: true, searchHadith: true }) {
             const allFoundDocs = []; 
             const lowerCaseQuery = query.toLowerCase().trim();
             const { searchQuran, searchHadith } = options;
 
-            const stopWords = new Set([
-              // Asli
-              'cara', 'dan', 'yang', 'dari', 'tentang', 'mengenai', 'untuk',
-              'adalah', 'ini', 'itu', 'apa', 'siapa', 'kapan', 'dimana',
-              'bagaimana', 'menurut', 'pandangan', 'dalam', 'hukumnya',
-            
-              // Tambahan sesuai kaidah bahasa Indonesia
-              'oleh', 'jika', 'atau', 'dapat', 'dengan', 'karena', 'seperti',
-              'apakah', 'bolehkah', 'bagaimanakah', 'mengapa', 'kenapa',
-              'saja', 'tidak', 'bisa', 'terhadap', 'selama', 'masih',
-              'hal', 'suatu', 'adanya', 'bahwa', 'yaitu', 'yakni',
-              'sebagai', 'namun', 'tetapi', 'jadi', 'maka', 'agar',
-              'supaya', 'hingga', 'telah', 'akan', 'sudah', 'belum',
-              'harus', 'mesti', 'seharusnya'
-            ]);
-
+            const stopWords = new Set(['cara', 'dan', 'yang', 'dari', 'tentang', 'mengenai', 'untuk', 'adalah', 'ini', 'itu', 'apa', 'siapa', 'kapan', 'dimana', 'bagaimana', 'menurut', 'pandangan', 'dalam', 'hukumnya']);
             
             const queryWords = lowerCaseQuery.split(/\s+/).filter(word => word.length > 2 && !stopWords.has(word));
 
@@ -816,7 +789,7 @@ ETOS ILMIAH:
             'unified-search': function() {
                 const panel = document.getElementById('unified-search-panel');
                 if (!panel) return;
-                panel.innerHTML = `<h2 class="text-3xl font-bold text-white mb-6">Pencarian & Riset</h2><form id="unified-search-form" class="relative"><textarea id="unified-search-input" rows="5" placeholder="Ketik topik, pertanyaan, atau referensi (misal: QS. Al-Baqarah: 183, HR. Bukhari tentang niat)..." class="w-full p-4 pr-12 bg-gray-800 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea><button type="button" class="dictation-btn absolute top-4 right-4 text-gray-400 hover:text-emerald-400" data-target="unified-search-input"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><button type="submit" class="mt-4 w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Jalankan Pencarian</button><div class="mt-4 flex items-center justify-center space-x-6"><label for="filter-quran" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-quran" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Al-Qur'an</span></label><label for="filter-hadith" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-hadith" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Hadis</span></label></div></form>`;
+                panel.innerHTML = `<form id="unified-search-form" class="relative"><textarea id="unified-search-input" rows="5" placeholder="Ketik topik, pertanyaan, atau referensi (misal: QS. Al-Baqarah: 183, HR. Bukhari tentang niat)..." class="w-full p-4 pr-12 bg-gray-800 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea><button type="button" class="dictation-btn absolute top-4 right-4 text-gray-400 hover:text-emerald-400" data-target="unified-search-input"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><button type="submit" class="mt-4 w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Jalankan Pencarian</button><div class="mt-4 flex items-center justify-center space-x-6"><label for="filter-quran" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-quran" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Al-Qur'an</span></label><label for="filter-hadith" class="flex items-center text-gray-300 cursor-pointer"><input type="checkbox" id="filter-hadith" class="form-checkbox h-5 w-5 bg-gray-700 border-gray-600 rounded text-emerald-500 focus:ring-emerald-500" checked><span class="ml-2">Hadis</span></label></div></form>`;
                 
                 panel.querySelector('#unified-search-form').addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -825,117 +798,165 @@ ETOS ILMIAH:
                 });
             },
             image: function() {
-                const panel = document.getElementById('image-panel');
-                if (!panel) return;
-                panel.innerHTML = `<h2 class="text-3xl font-bold text-white mb-6">Hikmah Gambar</h2><div class="max-w-md mx-auto text-center"><div id="image-display-area" class="mb-4 h-64 bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden"><p id="image-placeholder" class="text-gray-500">Pilih gambar atau gunakan kamera</p><img id="image-preview" src="" class="hidden max-h-full max-w-full rounded-lg"/><video id="camera-stream" class="hidden w-full h-full object-cover" autoplay></video></div><canvas id="camera-canvas" class="hidden"></canvas><div id="image-controls" class="space-y-2"><div class="flex space-x-2"><button id="upload-btn" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Upload Gambar</button><button id="camera-btn" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors">Gunakan Kamera</button></div></div><div id="capture-controls" class="hidden space-y-2"><button id="capture-btn" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">Ambil Foto</button><button id="switch-camera-btn" class="w-full text-sm py-2 text-gray-300 hover:text-white transition-colors">Kamera Belakang</button><button id="cancel-camera-btn" class="w-full text-sm text-gray-400 hover:text-white transition-colors">Batal</button></div><input type="file" id="image-input" class="hidden" accept="image/*"/></div>`;
-                
-                const imageInput = panel.querySelector('#image-input');
-                const uploadBtn = panel.querySelector('#upload-btn');
-                const cameraBtn = panel.querySelector('#camera-btn');
-                const imagePreview = panel.querySelector('#image-preview');
-                const imagePlaceholder = panel.querySelector('#image-placeholder');
-                const cameraStream = panel.querySelector('#camera-stream');
-                const cameraCanvas = panel.querySelector('#camera-canvas');
-                const imageControls = panel.querySelector('#image-controls');
-                const captureControls = panel.querySelector('#capture-controls');
-                const captureBtn = panel.querySelector('#capture-btn');
-                const cancelCameraBtn = panel.querySelector('#cancel-camera-btn');
-                
-                let currentFacingMode = 'user';
+    const panel = document.getElementById('image-panel');
+    if (!panel) return;
+    panel.innerHTML = `<h2 class="text-3xl font-bold text-white mb-6">Hikmah Gambar</h2><div class="max-w-md mx-auto text-center"><div id="image-display-area" class="mb-4 h-64 bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden"><p id="image-placeholder" class="text-gray-500">Pilih gambar atau gunakan kamera</p><img id="image-preview" src="" class="hidden max-h-full max-w-full rounded-lg"/><video id="camera-stream" class="hidden w-full h-full object-cover" autoplay></video></div><canvas id="camera-canvas" class="hidden"></canvas><div id="image-controls" class="space-y-2"><div class="flex space-x-2"><button id="upload-btn" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Upload Gambar</button><button id="camera-btn" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors">Gunakan Kamera</button></div></div><div id="capture-controls" class="hidden space-y-2"><button id="capture-btn" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">Ambil Foto</button><button id="switch-camera-btn" class="w-full text-sm py-2 text-gray-300 hover:text-white transition-colors">Kamera Belakang</button><button id="cancel-camera-btn" class="w-full text-sm text-gray-400 hover:text-white transition-colors">Batal</button></div><input type="file" id="image-input" class="hidden" accept="image/*"/></div>`;
+    
+    // --- SEMUA ELEMEN YANG DIBUTUHKAN ---
+    const imageInput = panel.querySelector('#image-input');
+    const uploadBtn = panel.querySelector('#upload-btn');
+    const cameraBtn = panel.querySelector('#camera-btn');
+    const imagePreview = panel.querySelector('#image-preview');
+    const imagePlaceholder = panel.querySelector('#image-placeholder');
+    const cameraStream = panel.querySelector('#camera-stream');
+    const cameraCanvas = panel.querySelector('#camera-canvas');
+    const imageControls = panel.querySelector('#image-controls');
+    const captureControls = panel.querySelector('#capture-controls');
+    const captureBtn = panel.querySelector('#capture-btn');
+    const cancelCameraBtn = panel.querySelector('#cancel-camera-btn');
+    
+    let currentFacingMode = 'user';
 
-                const stopCamera = () => {
-                    if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
-                    imageControls.classList.remove('hidden');
-                    captureControls.classList.add('hidden');
-                    cameraStream.classList.add('hidden');
-                    imagePlaceholder.classList.remove('hidden');
-                };
-                
-                async function startCamera(facingMode) {
-                    if (currentStream) {
-                        currentStream.getTracks().forEach(track => track.stop());
-                    }
-                    const constraints = { video: { facingMode: facingMode } };
-                    try {
-                        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                        cameraStream.srcObject = currentStream;
-                        imageControls.classList.add('hidden');
-                        captureControls.classList.remove('hidden');
-                        imagePlaceholder.classList.add('hidden');
-                        imagePreview.classList.add('hidden');
-                        cameraStream.classList.remove('hidden');
-                    } catch (err) {
-                        showError(`Gagal mengakses kamera. Pastikan Anda memberikan izin.`);
-                        stopCamera();
-                    }
-                }
+    const stopCamera = () => {
+        if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
+        imageControls.classList.remove('hidden');
+        captureControls.classList.add('hidden');
+        cameraStream.classList.add('hidden');
+        if (!imagePreview.src) { // Hanya tampilkan placeholder jika tidak ada gambar
+            imagePlaceholder.classList.remove('hidden');
+        }
+    };
+    
+    async function startCamera(facingMode) {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+        const constraints = { video: { facingMode: facingMode } };
+        try {
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            cameraStream.srcObject = currentStream;
+            imageControls.classList.add('hidden');
+            captureControls.classList.remove('hidden');
+            imagePlaceholder.classList.add('hidden');
+            imagePreview.classList.add('hidden');
+            cameraStream.classList.remove('hidden');
+        } catch (err) {
+            showError(`Gagal mengakses kamera. Pastikan Anda memberikan izin.`);
+            stopCamera();
+        }
+    }
 
-                const analyzeImage = async (base64Data, mimeType) => {
-                    showLoading('Mengolah gambar dan menggali hikmah...');
-                    document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
-                    const prompt = `${pilar2PromptInstruction} Anda diberikan sebuah gambar (visual) untuk dianalisis.
-                    **TUGAS ANDA:**
-                    1. Lihat dan deskripsikan isi gambar dengan cermat, objektif, dan sesuai konteks syariat.
-                    2. Gali **hikmah atau pelajaran moral-spiritual** dari gambar tersebut menggunakan pendekatan Islam: tafakur, tadabbur, dan tazakkur.
-                    3. Jika relevan, kaitkan nilai atau peristiwa dalam gambar dengan **ayat Al-Qur’an atau Hadis** yang berderajat sahih/hasan.
-                    4. Jika tidak ditemukan dalil langsung, nyatakan bahwa hikmah bersifat ijtihadi (qiyasi) dan butuh verifikasi oleh ulama.. Berikan jawaban JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
-                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
-                    try {
-                        const resultData = await callGeminiAPI(payload);
-                        renderImageAnalysis(resultData, `data:${mimeType};base64,${base64Data}`);
-                    } catch (error) { showError(error.message); }
-                };
+    // --- FUNGSI ANALISA GAMBAR UTAMA (VERSI UPGRADE) ---
+    const analyzeImage = async (base64Data, mimeType, imageElementId = 'image-preview') => {
+        showLoading('Menganalisa gambar, wajah, dan lokasi...');
+        document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
 
-                uploadBtn.addEventListener('click', () => imageInput.click());
-                imageInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onloadend = () => {
-                        const base64Data = reader.result.split(',')[1];
-                        imagePreview.src = reader.result;
-                        imagePreview.classList.remove('hidden');
-                        imagePlaceholder.classList.add('hidden');
-                        analyzeImage(base64Data, file.type);
-                    };
-                });
+        const image = document.getElementById(imageElementId);
+        
+        // 1. Deteksi Wajah & Ekspresi
+        const detections = await faceapi.detectAllFaces(image, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+        
+        // 2. Dapatkan Lokasi
+        const locationInfo = await getCurrentLocation();
 
-                if (hasCameraSupport && isSecureContext) {
-                    cameraBtn.addEventListener('click', () => startCamera(currentFacingMode));
-                    
-                    const switchCameraBtn = panel.querySelector('#switch-camera-btn');
-                    if(switchCameraBtn) {
-                        switchCameraBtn.addEventListener('click', () => {
-                            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
-                            startCamera(currentFacingMode);
-                        });
-                    }
+        let prompt;
+        let finalImageSrc = `data:${mimeType};base64,${base64Data}`;
 
-                } else {
-                    cameraBtn.classList.add('secure-feature-disabled');
-                    cameraBtn.title = "Fitur kamera memerlukan koneksi aman (HTTPS).";
-                    cameraBtn.onclick = () => showError(cameraBtn.title);
-                }
-                
-                cancelCameraBtn.addEventListener('click', stopCamera);
-                captureBtn.addEventListener('click', () => {
-                    cameraCanvas.width = cameraStream.videoWidth;
-                    cameraCanvas.height = cameraStream.videoHeight;
-                    cameraCanvas.getContext('2d').drawImage(cameraStream, 0, 0);
-                    const imageDataUrl = cameraCanvas.toDataURL('image/jpeg');
-                    const base64Data = imageDataUrl.split(',')[1];
-                    imagePreview.src = imageDataUrl;
-                    imagePreview.classList.remove('hidden');
-                    stopCamera();
-                    analyzeImage(base64Data, 'image/jpeg');
-                });
-            },
+        if (detections.length > 0) {
+            // Jika wajah terdeteksi
+            const expression = Object.keys(detections[0].expressions).reduce((a, b) => detections[0].expressions[a] > detections[0].expressions[b] ? a : b);
+            console.log(`Wajah terdeteksi. Ekspresi dominan: ${expression}. Lokasi: ${locationInfo}`);
+
+            prompt = `
+            ${pilar2PromptInstruction}
+            Anda adalah seorang cendekiawan Muslim yang bijaksana dalam memahami interaksi manusia.
+            
+            **Konteks Analisa:**
+            - Sebuah gambar telah diambil yang menampilkan ${detections.length} orang.
+            - Ekspresi wajah yang paling dominan terdeteksi adalah: **${expression}**.
+            - Lokasi pengambilan gambar terdeteksi di sekitar: **${locationInfo}**.
+
+            **Tugas Anda:**
+            Berdasarkan konteks di atas (ekspresi wajah dan lokasi), berikan **hikmah atau pelajaran mendalam** tentang interaksi sosial, emosi manusia (seperti kebahagiaan, keseriusan, dll), atau nasihat untuk introspeksi diri dari sudut pandang Al-Qur'an dan Hadis. 
+            
+            **PERINGATAN:** JANGAN memberikan diagnosis, tebakan, atau penilaian psikologis. Fokus HANYA pada hikmah dan pelajaran yang bisa diambil.
+
+            Berikan jawaban dalam format JSON berikut: {"description": "Deskripsikan secara singkat apa yang Anda lihat di gambar.", "wisdom": "Tuliskan hikmah dan pelajaran yang bisa diambil.", "references": [/* array of Quran/Hadith objects */], "follow_up_questions": ["Pertanyaan lanjutan terkait hikmah sosial", "Pertanyaan tentang cara mengelola emosi", "Pertanyaan reflektif lainnya"]}
+            `;
+        } else {
+            // Jika tidak ada wajah terdeteksi
+            console.log(`Tidak ada wajah terdeteksi. Lokasi: ${locationInfo}`);
+            prompt = `
+            ${pilar2PromptInstruction} 
+            Analisa gambar berikut dan gali hikmahnya. Konteks tambahan: gambar ini diambil di sekitar lokasi: **${locationInfo}**.
+            Berikan jawaban JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}
+            `;
+        }
+
+        const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
+        try {
+            const resultData = await callGeminiAPI(payload);
+            renderImageAnalysis(resultData, finalImageSrc);
+        } catch (error) { showError(error.message); }
+    };
+
+    // --- EVENT LISTENER UNTUK UPLOAD & KAMERA (VERSI UPGRADE) ---
+    uploadBtn.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+            const base64Data = reader.result.split(',')[1];
+            imagePreview.src = reader.result;
+            imagePreview.classList.remove('hidden');
+            imagePlaceholder.classList.add('hidden');
+            // Menunggu gambar benar-benar dimuat di elemen <img> sebelum analisa
+            imagePreview.onload = () => analyzeImage(base64Data, file.type, 'image-preview'); 
+        };
+    });
+
+    if (hasCameraSupport && isSecureContext) {
+        cameraBtn.addEventListener('click', () => startCamera(currentFacingMode));
+        
+        const switchCameraBtn = panel.querySelector('#switch-camera-btn');
+        if(switchCameraBtn) {
+            switchCameraBtn.addEventListener('click', () => {
+                currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+                startCamera(currentFacingMode);
+            });
+        }
+
+    } else {
+        cameraBtn.classList.add('secure-feature-disabled');
+        cameraBtn.title = "Fitur kamera memerlukan koneksi aman (HTTPS).";
+        cameraBtn.onclick = () => showError(cameraBtn.title);
+    }
+    
+    cancelCameraBtn.addEventListener('click', stopCamera);
+
+    captureBtn.addEventListener('click', () => {
+        cameraCanvas.width = cameraStream.videoWidth;
+        cameraCanvas.height = cameraStream.videoHeight;
+        cameraCanvas.getContext('2d').drawImage(cameraStream, 0, 0);
+        const imageDataUrl = cameraCanvas.toDataURL('image/jpeg');
+        const base64Data = imageDataUrl.split(',')[1];
+        
+        imagePreview.src = imageDataUrl;
+        imagePreview.classList.remove('hidden');
+        imagePlaceholder.classList.add('hidden');
+        stopCamera();
+
+        // Menunggu gambar benar-benar dimuat di elemen <img> sebelum analisa
+        imagePreview.onload = () => analyzeImage(base64Data, 'image/jpeg', 'image-preview');
+    });
+}
             settings: function() {
                 const panel = document.getElementById('settings-panel');
                 if (!panel) return;
                 panel.innerHTML = `
-                    <h2 class="text-3xl font-bold text-white mb-6">Pengaturan</h2>
                     <div class="max-w-xl mx-auto p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
                         <label for="api-key-input" class="block text-sm font-medium text-gray-300 mb-2">Gemini API Key Anda</label>
                         <div class="flex items-center space-x-2">
@@ -947,14 +968,14 @@ ETOS ILMIAH:
                     </div>
 
                     <div class="max-w-xl mx-auto p-4 bg-gray-800/50 border border-gray-700 rounded-lg mt-6">
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Muat Database Al-Qur'an & Hadis</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Muat Database Al-Qur'an & Hadis atau bisa tanpa database AI only !!</label>
                         <div class="flex items-center space-x-3 mt-2">
                             <label for="database-file-input" class="w-full text-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-md transition-colors cursor-pointer">
                                 Pilih File Lokal
                             </label>
                             <input type="file" id="database-file-input" accept=".json" class="hidden"/>
                             <button id="load-from-github-btn" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-colors">
-                                Load dari GitHub
+                                GitHub
                             </button>
                         </div>
                         <p id="database-status" class="text-center text-xs text-gray-500 mt-3">Pilih file lokal atau muat langsung dari GitHub.</p>
@@ -1087,6 +1108,7 @@ ETOS ILMIAH:
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            loadFaceApiModels();
             const mainNav = document.getElementById('main-nav');
             if (mainNav) {
                 mainNav.addEventListener('click', (e) => {
