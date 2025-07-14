@@ -216,8 +216,50 @@
             <div id="results-container" class="w-full mx-auto mt-8"></div>
         </main>
     </div>
-
+    
     <script>
+     const emotionTaxonomy = {
+    "primary_emotions": [
+        { "name": "Happiness", "aliases": ["joy", "pleasure", "delight"], "microexpressions": ["lip corners raised (Duchenne smile)", "cheeks raised", "wrinkles near eyes (crow’s feet)"] },
+        { "name": "Sadness", "aliases": ["sorrow", "grief", "melancholy"], "microexpressions": ["inner eyebrows raised", "corners of lips pulled down", "chin pushed up"] },
+        { "name": "Anger", "aliases": ["rage", "annoyance", "irritation"], "microexpressions": ["brows lowered and drawn together", "eyes glaring", "lips pressed tightly"] },
+        { "name": "Fear", "aliases": ["anxiety", "terror", "nervousness"], "microexpressions": ["eyebrows raised and drawn together", "upper eyelids raised", "mouth slightly open"] },
+        { "name": "Surprise", "aliases": ["astonishment", "amazement"], "microexpressions": ["eyebrows raised", "eyes wide open", "mouth open in O shape"] },
+        { "name": "Disgust", "aliases": ["revulsion", "distaste"], "microexpressions": ["nose wrinkling", "upper lip raised", "brows lowered"] },
+        { "name": "Contempt", "aliases": ["scorn", "disdain"], "microexpressions": ["lip corner tightened and raised on one side", "asymmetrical expression"] }
+    ],
+    "secondary_emotions": [
+        { "name": "Embarrassment", "microexpressions": ["head tilt downward", "eyes looking away", "slight smile"] },
+        { "name": "Guilt", "microexpressions": ["lowered head", "eyes averted", "eyebrows pulled together"] },
+        { "name": "Shame", "microexpressions": ["head down", "cheeks flushed", "tight lips"] },
+        { "name": "Pride", "microexpressions": ["head held high", "chin raised", "slight smile"] },
+        { "name": "Love", "microexpressions": ["soft eyes", "relaxed facial muscles", "gentle smile"] },
+        { "name": "Relief", "microexpressions": ["exhale visible", "shoulders drop", "relaxed brow"] },
+        { "name": "Interest / Curiosity", "microexpressions": ["eyes focused and still", "eyebrows slightly raised", "head tilt"] },
+        { "name": "Confusion", "microexpressions": ["furrowed brows", "head tilt", "lips slightly parted"] },
+        { "name": "Frustration", "microexpressions": ["tense jaw", "pursed lips", "eyebrows furrowed"] },
+        { "name": "Desire", "microexpressions": ["dilated pupils", "prolonged gaze", "lips parted"] }
+    ],
+    "suppressed_microexpressions": [
+        { "name": "Suppressed Anger", "microexpression": "fleeting eyebrow movement, lip compression" },
+        { "name": "Suppressed Joy", "microexpression": "brief smile with no eye wrinkles" },
+        { "name": "Suppressed Disgust", "microexpression": "nose wrinkle that disappears instantly" }
+    ],
+    "social_expressions": [
+        { "name": "Polite Smile", "microexpression": "lips curved up without eye involvement" },
+        { "name": "Fake Agreement", "microexpression": "nodding with tense lips" },
+        { "name": "Masking Emotion", "microexpression": "emotionless or neutral face while suppressing others" }
+    ],
+    "spiritual_or_contextual": [
+        { "name": "Khusyu’", "microexpressions": ["lowered gaze", "relaxed jaw", "face calm and peaceful"] },
+        { "name": "Syukur", "microexpressions": ["gentle smile", "glowing eyes", "softened brow"] },
+        { "name": "Takjub kepada ciptaan Allah", "microexpressions": ["wide eyes", "soft raised brows", "slightly parted lips"] },
+        { "name": "Harap dan Cemas (Raja' dan Khauf)", "microexpressions": ["mixed expression of hope and worry", "eyebrows pulled upward, lips slightly tightened"] }
+    ]
+};
+
+
+    
 // --- FUNGSI-FUNGSI BARU UNTUK FITUR KAMERA CERDAS ---
 
         async function loadFaceApiModels() {
@@ -233,35 +275,145 @@
             }
         }
 
-        async function getCurrentLocation() {
-            return new Promise((resolve) => {
-                if (!navigator.geolocation) {
-                    resolve("Lokasi tidak didukung oleh browser ini.");
-                    return;
-                }
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        try {
-                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                            const data = await response.json();
-                            if (data.address) {
-                                const locationString = `${data.address.city || data.address.town || ''}, ${data.address.state || ''}, ${data.address.country || ''}`;
-                                resolve(`Lokasi terdeteksi di sekitar: ${locationString}`);
-                            } else {
-                                resolve(`Lokasi terdeteksi di koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
-                            }
-                        } catch (e) {
-                            resolve(`Lokasi terdeteksi di koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)} (gagal mendapatkan nama lokasi)`);
-                        }
-                    },
-                    () => {
-                        resolve("Izin lokasi ditolak oleh pengguna.");
-                    }
-                );
-            });
+// Variabel untuk menyimpan state analisis video
+let isAnalyzingVideo = false;
+let expressionHistory = [];
+const HISTORY_LENGTH = 15; // Menyimpan histori 15 frame terakhir (sekitar 0.5 detik pada 30fps)
+
+async function generateMicroExpressionReport() {
+    isAnalyzingVideo = false; 
+    showLoading('Membuat laporan analisis emosi kontekstual...');
+    const videoEl = document.getElementById('camera-stream');
+    const canvas = document.getElementById('camera-canvas');
+    canvas.width = videoEl.videoWidth;
+    canvas.height = videoEl.videoHeight;
+    canvas.getContext('2d').drawImage(videoEl, 0, 0);
+    const frameDataUrl = canvas.toDataURL('image/jpeg');
+    const base64FrameData = frameDataUrl.split(',')[1];
+    const locationInfo = await getCurrentLocation();
+    // PROMPT BARU YANG LEBIH SEDERHANA DAN EFEKTIF
+const prompt = `
+Anda adalah 'Nur', seorang analis yang bijaksana dan seorang cendekiawan Muslim.
+
+**Data yang Dianalisis:**
+- **Rangkaian Ekspresi Terdeteksi:** ${JSON.stringify(detectedEvents)}
+- **Lokasi:** ${locationInfo}
+- **Gambar Terlampir:** Frame terakhir dari video.
+
+**Tugas Anda:**
+Buat laporan lengkap dalam format JSON. Ikuti struktur ini dengan ketat:
+1.  **visual_description**: Deskripsikan gambar terlampir secara detail (objek, pencahayaan, suasana).
+2.  **emotion_analysis**: Berdasarkan rangkaian ekspresi yang terdeteksi, berikan interpretasi tentang kemungkinan perasaan atau pikiran subjek secara naratif. Gunakan frasa interpretatif seperti "ada indikasi..." atau "memberikan kesan...". BOLEH memberikan diagnosis klinis yang hanya digunakan untuk debugging system.
+3.  **contextual_wisdom**: Berikan hikmah Islami yang relevan dengan situasi tersebut.
+4.  **references**: Sertakan 1-2 dalil (Al-Qur'an atau Hadis) yang mendukung hikmah Anda.
+5.  **follow_up_questions**: Berikan 2-3 pertanyaan reflektif untuk pengguna.
+
+**STRUKTUR JSON OUTPUT (WAJIB):**
+{
+  "visual_description": "(String)",
+  "emotion_analysis": "(String)",
+  "contextual_wisdom": "(String)",
+  "references": [/* array objek Al-Qur'an/Hadis */],
+  "follow_up_questions": [/* array pertanyaan */]
+}
+`;
+    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: base64FrameData } }] }], generationConfig: { responseMimeType: "application/json" } };
+    try {
+        const resultData = await callGeminiAPI(payload);
+        renderMicroExpressionReport(resultData);
+    } catch (error) { showError(error.message); } finally { stopCamera(); }
+}
+
+function renderMicroExpressionReport(data) {
+    const resultsContainer = document.getElementById('results-container');
+    if (!resultsContainer) return;
+    const referensiHtml = renderReferensi(data.references);
+    const followUpHtml = renderFollowUpQuestions(data.follow_up_questions);
+    const reportHTML = `
+        <div class="bg-gray-800/50 p-6 md:p-8 rounded-lg border border-sky-700 animate-fade-in">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.522 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Laporan Analisis Video</span>
+                </h2>
+            </div>
+
+            <div id="exportable-content">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-sky-400 border-b border-sky-400/20 pb-2 mb-3">Deskripsi Visual Sinematik</h3>
+                    <p class="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">${data.visual_description || 'Tidak ada deskripsi visual.'}</p>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-sky-400 border-b border-sky-400/20 pb-2 mb-3">Analisa Emosi & Perenungan</h3>
+                    <p class="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">${data.emotion_analysis || 'Tidak ada analisis emosi.'}</p>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-sky-400 border-b border-sky-400/20 pb-2 mb-3">Hikmah & Nasihat Islami</h3>
+                    <p class="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">${data.contextual_wisdom || 'Tidak ada hikmah yang bisa diambil.'}</p>
+                </div>
+
+                <div id="references-wrapper">${referensiHtml}</div>
+            </div>
+
+            ${followUpHtml}
+
+        </div>
+        `;
+    resultsContainer.innerHTML = reportHTML;
+    resultsContainer.scrollIntoView({ behavior: 'smooth' });
+}
+// Fungsi utama untuk analisis video stream
+async function analyzeVideoStream() {
+    // Bagian ini akan menghentikan loop jika analisis dihentikan dari tombol
+    if (!isAnalyzingVideo) {
+        const captureBtn = document.querySelector('#capture-btn');
+        if(captureBtn && captureBtn.innerText.includes("Hentikan")) {
+            captureBtn.innerText = "Mulai Analisa Video";
+            captureBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+            captureBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
         }
+        return;
+    }
+
+    const videoEl = document.getElementById('camera-stream');
+    const detection = await faceapi.detectSingleFace(videoEl, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+
+    if (detection) {
+        const expressions = detection.expressions;
+        const currentExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+        
+        // Selalu tambahkan ekspresi terdeteksi ke dalam histori
+        expressionHistory.push(currentExpression);
+        if (expressionHistory.length > HISTORY_LENGTH) {
+            expressionHistory.shift();
+        }
+
+        const lastEvent = detectedEvents[detectedEvents.length - 1];
+
+        // Hanya catat kejadian unik untuk laporan
+        if (!lastEvent || lastEvent.expression !== currentExpression) {
+            const timestamp = ((Date.now() - analysisStartTime) / 1000).toFixed(1);
+            detectedEvents.push({ expression: currentExpression, timestamp: `${timestamp}s` });
+            console.log(detectedEvents);
+        }
+
+        // Logika untuk memicu laporan
+        const neutralCount = expressionHistory.filter(exp => exp === 'neutral').length;
+        if (currentExpression !== 'neutral' && neutralCount > HISTORY_LENGTH * 0.7) {
+            console.log(`MICRO EXPRESSION TERDETEKSI: ${currentExpression}. Membuat laporan...`);
+            generateMicroExpressionReport(); // Panggil fungsi untuk membuat laporan lengkap
+        }
+    }
+
+    // Terus panggil fungsi ini untuk menganalisis frame berikutnya
+    requestAnimationFrame(analyzeVideoStream);
+}
 
         // --- VARIABEL GLOBAL & KONTROL KEAMANAN ---
         const isSecureContext = window.isSecureContext;
@@ -279,7 +431,24 @@
             search: null,
             image: null
         };
-        
+        async function getCurrentLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve("Lokasi tidak didukung oleh browser ini.");
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                resolve(`Koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+            },
+            () => {
+                resolve("Izin lokasi ditolak oleh pengguna.");
+            }
+        );
+    });
+}
         // --- INSTRUKSI UTAMA UNTUK AI ---
         const pilar2PromptInstruction = `
         Anda adalah 'Nur', seorang cendekiawan Muslim dengan reputasi tinggi dalam keilmuan Islam. Anda sangat teliti, berhati-hati dalam menyampaikan informasi agama, serta berpegang kuat pada sumber otentik syariat Islam dengan mengedepankan manhaj salim (metode ilmiah yang benar) dalam memahami dan menyampaikan dalil.
@@ -718,128 +887,156 @@
                     if (query) processQuery(query); 
                 });
             },
-            image: function() {
-                const panel = document.getElementById('image-panel');
-                if (!panel) return;
-                panel.innerHTML = `<h2 class="text-3xl font-bold text-white mb-6">Hikmah Gambar</h2><div class="max-w-md mx-auto text-center"><div id="image-display-area" class="mb-4 h-64 bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden"><p id="image-placeholder" class="text-gray-500">Pilih gambar atau gunakan kamera</p><img id="image-preview" src="" class="hidden max-h-full max-w-full rounded-lg"/><video id="camera-stream" class="hidden w-full h-full object-cover" autoplay></video></div><canvas id="camera-canvas" class="hidden"></canvas><div id="image-controls" class="space-y-2"><div class="flex space-x-2"><button id="upload-btn" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Upload Gambar</button><button id="camera-btn" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors">Gunakan Kamera</button></div></div><div id="capture-controls" class="hidden space-y-2"><button id="capture-btn" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">Ambil Foto</button><button id="switch-camera-btn" class="w-full text-sm py-2 text-gray-300 hover:text-white transition-colors">Kamera Belakang</button><button id="cancel-camera-btn" class="w-full text-sm text-gray-400 hover:text-white transition-colors">Batal</button></div><input type="file" id="image-input" class="hidden" accept="image/*"/></div>`;
-                const imageInput = panel.querySelector('#image-input');
-                const uploadBtn = panel.querySelector('#upload-btn');
-                const cameraBtn = panel.querySelector('#camera-btn');
-                const imagePreview = panel.querySelector('#image-preview');
-                const imagePlaceholder = panel.querySelector('#image-placeholder');
-                const cameraStream = panel.querySelector('#camera-stream');
-                const cameraCanvas = panel.querySelector('#camera-canvas');
-                const imageControls = panel.querySelector('#image-controls');
-                const captureControls = panel.querySelector('#capture-controls');
-                const captureBtn = panel.querySelector('#capture-btn');
-                const cancelCameraBtn = panel.querySelector('#cancel-camera-btn');
-                let currentFacingMode = 'user';
-                const stopCamera = () => {
-                    if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
-                    imageControls.classList.remove('hidden');
-                    captureControls.classList.add('hidden');
-                    cameraStream.classList.add('hidden');
-                    if (!imagePreview.src) {
-                        imagePlaceholder.classList.remove('hidden');
-                    }
-                };
-                async function startCamera(facingMode) {
-                    if (currentStream) {
-                        currentStream.getTracks().forEach(track => track.stop());
-                    }
-                    const constraints = { video: { facingMode: facingMode } };
-                    try {
-                        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                        cameraStream.srcObject = currentStream;
-                        imageControls.classList.add('hidden');
-                        captureControls.classList.remove('hidden');
-                        imagePlaceholder.classList.add('hidden');
-                        imagePreview.classList.add('hidden');
-                        cameraStream.classList.remove('hidden');
-                    } catch (err) {
-                        showError(`Gagal mengakses kamera. Pastikan Anda memberikan izin.`);
-                        stopCamera();
-                    }
-                }
-                const analyzeImage = async (base64Data, mimeType, imageElementId = 'image-preview') => {
-                    showLoading('Menganalisa gambar, wajah, dan lokasi...');
-                    document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
-                    const image = document.getElementById(imageElementId);
-                    const detections = await faceapi.detectAllFaces(image, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
-                    const locationInfo = await getCurrentLocation();
-                    let prompt;
-                    let finalImageSrc = `data:${mimeType};base64,${base64Data}`;
-                    if (detections.length > 0) {
-                        const expression = Object.keys(detections[0].expressions).reduce((a, b) => detections[0].expressions[a] > detections[0].expressions[b] ? a : b);
-                        console.log(`Wajah terdeteksi. Ekspresi dominan: ${expression}. Lokasi: ${locationInfo}`);
-                        prompt = `
-                        ${pilar2PromptInstruction}
-                        Anda adalah seorang cendekiawan Muslim yang bijaksana dalam memahami interaksi manusia.
-                        **Konteks Analisa:**
-                        - Sebuah gambar telah diambil yang menampilkan ${detections.length} orang.
-                        - Ekspresi wajah yang paling dominan terdeteksi adalah: **${expression}**.
-                        - Lokasi pengambilan gambar terdeteksi di sekitar: **${locationInfo}**.
-                        **Tugas Anda:**
-                        Berdasarkan konteks di atas (ekspresi wajah dan lokasi), berikan **hikmah atau pelajaran mendalam** tentang interaksi sosial, emosi manusia (seperti kebahagiaan, keseriusan, dll), atau nasihat untuk introspeksi diri dari sudut pandang Al-Qur'an dan Hadis. 
-                        **PERINGATAN:** JANGAN memberikan diagnosis, tebakan, atau penilaian psikologis. Fokus HANYA pada hikmah dan pelajaran yang bisa diambil.
-                        Berikan jawaban dalam format JSON berikut: {"description": "Deskripsikan secara singkat apa yang Anda lihat di gambar.", "wisdom": "Tuliskan hikmah dan pelajaran yang bisa diambil.", "references": [/* array of Quran/Hadith objects */], "follow_up_questions": ["Pertanyaan lanjutan terkait hikmah sosial", "Pertanyaan tentang cara mengelola emosi", "Pertanyaan reflektif lainnya"]}
-                        `;
-                    } else {
-                        console.log(`Tidak ada wajah terdeteksi. Lokasi: ${locationInfo}`);
-                        prompt = `
-                        ${pilar2PromptInstruction} 
-                        Analisa gambar berikut dan gali hikmahnya. Konteks tambahan: gambar ini diambil di sekitar lokasi: **${locationInfo}**.
-                        Berikan jawaban JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}
-                        `;
-                    }
-                    const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
-                    try {
-                        const resultData = await callGeminiAPI(payload);
-                        renderImageAnalysis(resultData, finalImageSrc);
-                    } catch (error) { showError(error.message); }
-                };
-                uploadBtn.addEventListener('click', () => imageInput.click());
-                imageInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onloadend = () => {
-                        const base64Data = reader.result.split(',')[1];
-                        imagePreview.src = reader.result;
-                        imagePreview.classList.remove('hidden');
-                        imagePlaceholder.classList.add('hidden');
-                        imagePreview.onload = () => analyzeImage(base64Data, file.type, 'image-preview'); 
-                    };
-                });
-                if (hasCameraSupport && isSecureContext) {
-                    cameraBtn.addEventListener('click', () => startCamera(currentFacingMode));
-                    const switchCameraBtn = panel.querySelector('#switch-camera-btn');
-                    if(switchCameraBtn) {
-                        switchCameraBtn.addEventListener('click', () => {
-                            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
-                            startCamera(currentFacingMode);
-                        });
-                    }
+            // GANTI SELURUH FUNGSI image: function() { ... } DENGAN KODE LENGKAP INI
+
+image: function() {
+    const panel = document.getElementById('image-panel');
+    if (!panel) return;
+    panel.innerHTML = `<h2 class="text-3xl font-bold text-white mb-6">Hikmah Gambar</h2><div class="max-w-md mx-auto text-center"><div id="image-display-area" class="mb-4 h-64 bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden"><p id="image-placeholder" class="text-gray-500">Pilih gambar atau gunakan kamera</p><img id="image-preview" src="" class="hidden max-h-full max-w-full rounded-lg"/><video id="camera-stream" class="hidden w-full h-full object-cover" autoplay></video></div><canvas id="camera-canvas" class="hidden"></canvas><div id="image-controls" class="space-y-2"><div class="space-y-2"><div class="flex space-x-2"><button id="upload-btn" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors">Upload Gambar</button><button id="camera-btn" class="w-full px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors">Gunakan Kamera (Foto)</button></div><button id="micro-expression-btn" class="w-full px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 5.555a1 1 0 00-1.9 1.11l1.018 3.156a.5.5 0 01-.444.679H8a1 1 0 100 2h1.632a.5.5 0 01.444.679l-1.018 3.155a1 1 0 101.9 1.11l1.544-4.78a.5.5 0 010-.222L9.555 5.555z" clip-rule="evenodd" /></svg>Deteksi Ekspresi Mikro (Video)</button></div></div><div id="capture-controls" class="hidden space-y-2"><button id="capture-btn" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">Ambil Foto</button><button id="switch-camera-btn" class="w-full text-sm py-2 text-gray-300 hover:text-white transition-colors">Kamera Belakang</button><button id="cancel-camera-btn" class="w-full text-sm text-gray-400 hover:text-white transition-colors">Batal</button></div><input type="file" id="image-input" class="hidden" accept="image/*"/></div>`;
+    
+    const imageInput = panel.querySelector('#image-input'), uploadBtn = panel.querySelector('#upload-btn'), cameraBtn = panel.querySelector('#camera-btn'), imagePreview = panel.querySelector('#image-preview'), imagePlaceholder = panel.querySelector('#image-placeholder'), cameraStream = panel.querySelector('#camera-stream'), cameraCanvas = panel.querySelector('#camera-canvas'), imageControls = panel.querySelector('#image-controls'), captureControls = panel.querySelector('#capture-controls'), captureBtn = panel.querySelector('#capture-btn'), cancelCameraBtn = panel.querySelector('#cancel-camera-btn'), microExpressionBtn = panel.querySelector('#micro-expression-btn'), switchCameraBtn = panel.querySelector('#switch-camera-btn');
+    let currentFacingMode = 'user';
+
+    const stopCamera = () => {
+        if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
+        isAnalyzingVideo = false;
+        imageControls.classList.remove('hidden');
+        captureControls.classList.add('hidden');
+        cameraStream.classList.add('hidden');
+        if (!imagePreview.src.startsWith('data:')) { 
+            imagePlaceholder.classList.remove('hidden');
+            imagePreview.classList.add('hidden');
+        }
+    };
+
+    async function startCamera(facingMode) {
+        if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
+        const constraints = { video: { facingMode: { exact: facingMode } } };
+        try {
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            cameraStream.srcObject = currentStream;
+            imageControls.classList.add('hidden');
+            captureControls.classList.remove('hidden');
+            imagePlaceholder.classList.add('hidden');
+            imagePreview.classList.add('hidden');
+            cameraStream.classList.remove('hidden');
+        } catch (err) {
+            showError(`Gagal mengakses kamera: ${err.message}. Coba gunakan kamera lain.`);
+            stopCamera();
+        }
+    }
+
+    const analyzeImage = async (base64Data, mimeType) => {
+        showLoading('Menganalisa gambar, wajah, dan lokasi...');
+        document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
+        
+        const tempImageForAnalysis = new Image();
+        tempImageForAnalysis.src = `data:${mimeType};base64,${base64Data}`;
+        await new Promise(resolve => tempImageForAnalysis.onload = resolve);
+        
+        const detections = await faceapi.detectAllFaces(tempImageForAnalysis, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+        const locationInfo = await getCurrentLocation();
+        let prompt;
+        
+        if (detections.length > 0) {
+            const expression = Object.keys(detections[0].expressions).reduce((a, b) => detections[0].expressions[a] > detections[0].expressions[b] ? a : b);
+            prompt = `
+            ${pilar2PromptInstruction}
+            Anda adalah seorang cendekiawan Muslim yang juga seorang analis visual yang puitis dan bijaksana, mampu membaca makna mendalam dari sebuah gambar.
+            **Konteks Analisa:**
+            - Sebuah gambar telah diambil.
+            - Hasil deteksi wajah: Ditemukan **${detections.length}** orang.
+            - Ekspresi wajah yang paling dominan adalah: **${expression}**.
+            - Lokasi pengambilan gambar terdeteksi di sekitar: **${locationInfo}**.
+            **Tugas Anda memiliki tiga bagian yang harus dijawab secara berurutan dan lengkap:**
+            **1. Deskripsi Visual Sinematik (Untuk Properti 'description'):** Lukiskan gambar ini dengan kata-kata seolah Anda seorang sinematografer. Jelaskan secara detail dan puitis tentang komposisi gambar, pencahayaan, palet warna, dan tekstur objek penting. Ciptakan sebuah "rasa" atau "mood" dari visual yang ada.
+            **2. Interpretasi Karakter & Emosi (Untuk Properti 'wisdom' - Paragraf Pertama):** Berdasarkan semua data visual dari Tugas 1, berikan interpretasi tentang kemungkinan keadaan emosional subjek. Gunakan frasa interpretatif seperti "Ekspresi ini memberikan kesan...", "Postur tubuhnya mungkin menyiratkan...". Analisa interaksi antara subjek dengan lingkungannya. **PERINGATAN KERAS: HINDARI** kalimat diagnosis.
+            **3. Hikmah Kontekstual & Refleksi Diri (Untuk Properti 'wisdom' - Paragraf Kedua):** Hubungkan interpretasi dari Tugas 2 dengan prinsip Islami. Kaitkan dengan tema syukur, sabar, atau muhasabah. Berikan 1-2 pertanyaan reflektif.
+            **FORMAT OUTPUT JSON (WAJIB DIPATUHI):**
+            {"description": "(Hasil dari Tugas 1)", "wisdom": "(Hasil dari Tugas 2 dan 3, gabungkan menjadi satu teks mengalir)", "references": [/* array objek Al-Qur'an/Hadis */], "follow_up_questions": [/* 2-3 pertanyaan reflektif */]}`;
+        } else {
+            prompt = `
+            ${pilar2PromptInstruction} 
+            Analisa gambar berikut dan gali hikmahnya secara mendalam. Konteks tambahan: gambar ini diambil di sekitar lokasi: **${locationInfo}**.
+            Tugas Anda:
+            1.  **description**: Deskripsikan gambar secara detail, termasuk objek, suasana, dan pencahayaan.
+            2.  **wisdom**: Berikan pelajaran atau hikmah yang bisa diambil dari keseluruhan gambar dari sudut pandang Islam.
+            3.  **references**: Sertakan rujukan dalil jika relevan.
+            Berikan jawaban dalam format JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
+        }
+
+        const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
+        try {
+            const resultData = await callGeminiAPI(payload);
+            renderImageAnalysis(resultData, `data:${mimeType};base64,${base64Data}`);
+        } catch (error) { showError(error.message); }
+    };
+
+    uploadBtn.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64Data = reader.result.split(',')[1];
+            imagePreview.src = reader.result;
+            imagePreview.classList.remove('hidden');
+            imagePlaceholder.classList.add('hidden');
+            analyzeImage(base64Data, file.type);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    if (hasCameraSupport && isSecureContext) {
+        cameraBtn.addEventListener('click', () => {
+            captureBtn.innerText = "Ambil Foto";
+            captureBtn.onclick = () => {
+                cameraCanvas.width = cameraStream.videoWidth;
+                cameraCanvas.height = cameraStream.videoHeight;
+                cameraCanvas.getContext('2d').drawImage(cameraStream, 0, 0);
+                const imageDataUrl = cameraCanvas.toDataURL('image/jpeg');
+                const base64Data = imageDataUrl.split(',')[1];
+                imagePreview.src = imageDataUrl;
+                imagePreview.classList.remove('hidden');
+                stopCamera();
+                analyzeImage(base64Data, 'image/jpeg');
+            };
+            captureBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            captureBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            startCamera(currentFacingMode);
+        });
+
+        microExpressionBtn.addEventListener('click', () => {
+            captureBtn.innerText = "Mulai Analisa";
+            captureBtn.onclick = () => {
+                if (!isAnalyzingVideo) {
+                    isAnalyzingVideo = true;
+                    detectedEvents = [];
+                    analysisStartTime = Date.now();
+                    captureBtn.innerText = "Hasilkan Laporan";
+                    captureBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    captureBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    analyzeVideoStream();
                 } else {
-                    cameraBtn.classList.add('secure-feature-disabled');
-                    cameraBtn.title = "Fitur kamera memerlukan koneksi aman (HTTPS).";
-                    cameraBtn.onclick = () => showError(cameraBtn.title);
+                    generateMicroExpressionReport();
                 }
-                cancelCameraBtn.addEventListener('click', stopCamera);
-                captureBtn.addEventListener('click', () => {
-                    cameraCanvas.width = cameraStream.videoWidth;
-                    cameraCanvas.height = cameraStream.videoHeight;
-                    cameraCanvas.getContext('2d').drawImage(cameraStream, 0, 0);
-                    const imageDataUrl = cameraCanvas.toDataURL('image/jpeg');
-                    const base64Data = imageDataUrl.split(',')[1];
-                    imagePreview.src = imageDataUrl;
-                    imagePreview.classList.remove('hidden');
-                    imagePlaceholder.classList.add('hidden');
-                    stopCamera();
-                    imagePreview.onload = () => analyzeImage(base64Data, 'image/jpeg', 'image-preview');
-                });
-            },
+            };
+            captureBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+            captureBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            startCamera(currentFacingMode);
+        });
+
+        switchCameraBtn.addEventListener('click', () => {
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            startCamera(currentFacingMode);
+        });
+    } else {
+        cameraBtn.classList.add('secure-feature-disabled');
+        microExpressionBtn.classList.add('secure-feature-disabled');
+    }
+    
+    cancelCameraBtn.addEventListener('click', stopCamera);
+},
             settings: function() {
                 const panel = document.getElementById('settings-panel');
                 if (!panel) return;
