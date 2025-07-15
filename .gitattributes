@@ -1,2 +1,5 @@
 *.json filter=lfs diff=lfs merge=lfs -text
+<<<<<<< HEAD
 database.json filter=lfs diff=lfs merge=lfs -text
+=======
+>>>>>>> 088143b699251b4844c124e2ef1b8dc0e31034d9
