@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran Analyzer v4 - Beta 2 Version</title>
+    
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter for a clean, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons for sharp, clean icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- D3.js for Network Visualization (Panel 1) -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0c1322; color: #e0e0e0; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        .nav-link.active { background-color: rgba(56, 189, 248, 0.1); color: #38bdf8; box-shadow: inset 3px 0 0 0 #38bdf8; }
+        .panel-content { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        #network-visualization { background-color: #05080f; background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 60%); cursor: grab; }
+        #network-visualization:active { cursor: grabbing; }
+        .subpanel-tab.active { border-bottom-color: #38bdf8; color: #38bdf8; }
+    </style>
+</head>
+<body class="bg-slate-950">
+
+    <div class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900/80 backdrop-blur-sm border-r border-slate-800 flex flex-col">
+            <div class="px-6 py-4 border-b border-slate-800">
+                <h1 class="text-xl font-bold text-white">Quran Analyzer</h1>
+                <p class="text-xs text-amber-400">Beta Version 2</p>
+            </div>
+            <nav class="flex-1 mt-6 space-y-2">
+                <a href="#" data-panel="panel-1" class="nav-link active flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800 transition-all duration-200">
+                    <i data-lucide="sigma" class="w-5 h-5 mr-3"></i> The Math of Quran
+                </a>
+                <a href="#" data-panel="panel-2" class="nav-link flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800 transition-all duration-200">
+                    <i data-lucide="puzzle" class="w-5 h-5 mr-3"></i> Analisis Multi-Dimensi
+                </a>
+                <a href="#" data-panel="panel-3" class="nav-link flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800 transition-all duration-200">
+                    <i data-lucide="mic" class="w-5 h-5 mr-3"></i> Studio Tilawah
+                </a>
+            </nav>
+            <div class="px-6 py-4 text-xs text-slate-500 border-t border-slate-800">
+                <p>&copy; 2024 - Project Vision</p>
+                <p>100% Offline Core</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            
+            <!-- Panel 1: The Math of Quran (PSQ) -->
+            <div id="panel-1" class="panel-content">
+                <h2 class="text-3xl font-bold text-white mb-1">The Math of Quran (PSQ)</h2>
+                <p class="text-slate-400 mb-6">Mengungkap sisi matematis Al-Qur'an melalui analisis statistik dan pola.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Main Visualization Area -->
+                    <div class="lg:col-span-2 h-[75vh] glass-card rounded-xl p-4 flex flex-col">
+                        <div class="flex-shrink-0 mb-4">
+                             <div class="flex items-center space-x-2">
+                                <div class="flex-grow flex items-center bg-slate-800/50 rounded-lg p-2 border border-slate-700">
+                                    <i data-lucide="search" class="w-5 h-5 mx-2 text-slate-400"></i>
+                                    <input id="network-search-input" type="text" placeholder="Cari topik untuk visualisasi..." class="w-full bg-transparent focus:outline-none text-white">
+                                </div>
+                                <input type="file" id="file-input" class="hidden">
+                                <button id="load-db-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200 flex items-center" title="Muat file quran.json">
+                                    <i data-lucide="database" class="w-5 h-5"></i>
+                                </button>
+                                <button id="visualize-btn" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+                                    Visualisasikan
+                                </button>
+                            </div>
+                        </div>
+                        <div id="network-visualization" class="flex-grow rounded-lg w-full h-full border border-slate-700 overflow-hidden">
+                            <!-- D3.js will render the SVG here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Sub-Panel: Analysis Tools -->
+                    <div class="h-[75vh] overflow-y-auto">
+                        <div class="glass-card rounded-xl p-1">
+                            <div class="flex border-b border-slate-700">
+                                <button data-tab="inspector" class="subpanel-tab active flex-1 p-3 text-sm font-semibold text-slate-300 border-b-2 border-transparent hover:bg-slate-800/50 transition">Node Inspector</button>
+                                <button data-tab="konkordansi" class="subpanel-tab flex-1 p-3 text-sm font-semibold text-slate-300 border-b-2 border-transparent hover:bg-slate-800/50 transition">Konkordansi</button>
+                                <button data-tab="statistik" class="subpanel-tab flex-1 p-3 text-sm font-semibold text-slate-300 border-b-2 border-transparent hover:bg-slate-800/50 transition">Statistik Huruf</button>
+                            </div>
+                            <div class="p-5">
+                                <!-- Node Inspector Tab Content -->
+                                <div id="tab-inspector" class="subpanel-content space-y-4">
+                                    <div id="node-inspector" class="text-sm text-slate-300 min-h-[250px]">
+                                        <h4 class="font-semibold text-slate-200 mb-2">Analisis Tata Bahasa & Statistik</h4>
+                                        <p class="text-slate-400">Klik sebuah node pada visualisasi untuk melihat detail di sini.</p>
+                                    </div>
+                                </div>
+                                <!-- Konkordansi Tab Content -->
+                                <div id="tab-konkordansi" class="subpanel-content hidden space-y-4">
+                                    <h4 class="font-semibold text-slate-200 mb-2">Pencarian Kata Sekitar (Konkordansi)</h4>
+                                    <input type="text" placeholder="Masukkan kata kunci Arab" class="w-full bg-slate-800 border border-slate-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white">
+                                    <div class="text-xs text-slate-400 p-2 border border-dashed border-slate-600 rounded-md">
+                                        <p>Hasil konkordansi akan ditampilkan di sini. Contoh: Kata sebelum & sesudah "ٱللَّهُ".</p>
+                                    </div>
+                                </div>
+                                <!-- Statistik Huruf Tab Content -->
+                                <div id="tab-statistik" class="subpanel-content hidden space-y-4">
+                                    <h4 class="font-semibold text-slate-200 mb-2">Frekuensi Huruf Hijaiyah</h4>
+                                    <div class="text-xs text-slate-300 font-mono">
+                                        <p>Tabel frekuensi kemunculan setiap huruf di seluruh mushaf akan ditampilkan di sini setelah data dimuat.</p>
+                                        <!-- Placeholder for table -->
+                                        <div class="mt-2 p-2 border border-dashed border-slate-600 rounded-md">
+                                            <p>ا (Alif): 52,807</p>
+                                            <p>ب (Ba): 11,428</p>
+                                            <p>ت (Ta): 10,199</p>
+                                            <p>...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: The Secret: Analisis Multi-Dimensi -->
+            <div id="panel-2" class="panel-content hidden">
+                <h2 class="text-3xl font-bold text-white mb-1">The Secret: Analisis Multi-Dimensi</h2>
+                <p class="text-slate-400 mb-6">Menganalisis sebuah topik dari tiga sudut pandang: Matematis, Hikmah Tekstual, dan Hukum Universal.</p>
+                <div class="max-w-2xl mx-auto mb-8">
+                    <div class="flex items-center bg-slate-800/50 rounded-lg p-2 border border-slate-700 glass-card">
+                        <i data-lucide="brain-circuit" class="w-5 h-5 mx-2 text-slate-400"></i>
+                        <input id="analysis-topic-input" type="text" placeholder="Masukkan topik untuk dianalisis..." class="w-full bg-transparent focus:outline-none text-white">
+                        <button id="analyze-topic-btn" class="ml-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">Analisis</button>
+                    </div>
+                </div>
+                <div id="analysis-results" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-sky-400 mb-3 flex items-center"><i data-lucide="sigma" class="w-5 h-5 mr-2"></i> Dimensi Matematis</h3>
+                        <p class="text-slate-400 text-sm">Analisis frekuensi topik dan kata-kata terkait dari database lokal.</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-green-400 mb-3 flex items-center"><i data-lucide="book-open" class="w-5 h-5 mr-2"></i> Dimensi Hikmah Tekstual</h3>
+                        <p class="text-slate-400 text-sm">Menampilkan ayat kunci terkait topik beserta ulasan makna mendalamnya (Konten dari AI).</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-amber-400 mb-3 flex items-center"><i data-lucide="scale" class="w-5 h-5 mr-2"></i> Dimensi Hukum Universal</h3>
+                        <p class="text-slate-400 text-sm">Analisis keselarasan konsep topik dengan hukum sebab-akibat universal (Konten dari AI).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 3: Studio Tilawah (Dimensi Audio) -->
+            <div id="panel-3" class="panel-content hidden">
+                <h2 class="text-3xl font-bold text-white mb-1">Studio Tilawah</h2>
+                <p class="text-slate-400 mb-6">Mengapresiasi Al-Qur'an dari sisi suara, seni tilawah, dan kaidah tajwid.</p>
+                <div class="bg-yellow-900/30 border border-yellow-600 text-yellow-300 text-sm rounded-lg p-3 mb-6 flex items-center">
+                    <i data-lucide="wifi" class="w-5 h-5 mr-3"></i> Fitur pada panel ini memerlukan koneksi internet aktif.
+                </div>
+                <div class="max-w-4xl mx-auto glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4">Perbandingan Qari'</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="number" placeholder="No. Surah" class="md:col-span-1 bg-slate-800 border border-slate-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white">
+                        <input type="number" placeholder="No. Ayat" class="md:col-span-1 bg-slate-800 border border-slate-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white">
+                        <button class="md:col-span-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                            <i data-lucide="play-circle" class="w-5 h-5 mr-2"></i> Cari & Putar
+                        </button>
+                    </div>
+                    <div class="mt-4 text-center text-slate-400">
+                        <p>Pemutar audio dari API publik (e.g., AlQuran.cloud) akan muncul di sini.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            // --- DATA STORE (Simulated quran.json with grammatical tagging) ---
+            let quranData = [
+                { "id": "quran-10-82", "type": "Quran", "source": "QS. Yunus: 82", "words": [{ "text": "وَيُحِقُّ", "grammar": "Fi'il" }, { "text": "ٱللَّهُ", "grammar": "Isim" }, { "text": "ٱلْحَقَّ", "grammar": "Isim" }, { "text": "بِكَلِمَٰتِهِۦ", "grammar": "Isim" }, { "text": "وَلَوْ", "grammar": "Huruf" }, { "text": "كَرِهَ", "grammar": "Fi'il" }, { "text": "ٱلْمُجْرِمُونَ", "grammar": "Isim" }], "translation": "Dan Allah akan mengukuhkan yang benar dengan ketetapan-Nya, walaupun orang-orang yang berbuat dosa tidak menyukainya." },
+                { "id": "quran-58-11", "type": "Quran", "source": "QS. Al-Mujadila: 11", "words": [{ "text": "يَرْفَعِ", "grammar": "Fi'il" }, { "text": "ٱللَّهُ", "grammar": "Isim" }, { "text": "ٱلَّذِينَ", "grammar": "Isim" }, { "text": "ءَامَنُوا۟", "grammar": "Fi'il" }, { "text": "مِنكُمْ", "grammar": "Huruf" }, { "text": "وَٱلَّذِينَ", "grammar": "Isim" }, { "text": "أُوتُوا۟", "grammar": "Fi'il" }, { "text": "ٱلْعِلْمَ", "grammar": "Isim" }, { "text": "دَرَجَٰتٍ", "grammar": "Isim" }], "translation": "...niscaya Allah akan meninggikan orang-orang yang beriman di antaramu dan orang-orang yang diberi ilmu pengetahuan beberapa derajat..." },
+                { "id": "quran-13-28", "type": "Quran", "source": "QS. Ar-Ra'd: 28", "words": [{ "text": "ٱلَّذِينَ", "grammar": "Isim" }, { "text": "ءَامَنُوا۟", "grammar": "Fi'il" }, { "text": "وَتَطْمَئِنُّ", "grammar": "Fi'il" }, { "text": "قُلُوبُهُم", "grammar": "Isim" }, { "text": "بِذِكْرِ", "grammar": "Isim" }, { "text": "ٱللَّهِ", "grammar": "Isim" }, { "text": "أَلَا", "grammar": "Huruf" }, { "text": "بِذِكْرِ", "grammar": "Isim" }, { "text": "ٱللَّهِ", "grammar": "Isim" }, { "text": "تَطْمَئِنُّ", "grammar": "Fi'il" }, { "text": "ٱلْقُلُوبُ", "grammar": "Isim" }], "translation": "(yaitu) orang-orang yang beriman dan hati mereka manjadi tenteram dengan mengingat Allah. Ingatlah, hanya dengan mengingati Allah-lah hati menjadi tenteram." }
+            ];
+
+            // --- Navigation Logic ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const panels = document.querySelectorAll('.panel-content');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetPanelId = link.getAttribute('data-panel');
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    link.classList.add('active');
+                    panels.forEach(panel => {
+                        panel.id === targetPanelId ? panel.classList.remove('hidden') : panel.classList.add('hidden');
+                    });
+                });
+            });
+
+            // --- Panel 1: Sub-panel Tab Logic ---
+            const subpanelTabs = document.querySelectorAll('.subpanel-tab');
+            const subpanelContents = document.querySelectorAll('.subpanel-content');
+            subpanelTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    subpanelTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetContentId = `tab-${tab.dataset.tab}`;
+                    subpanelContents.forEach(content => {
+                        content.id === targetContentId ? content.classList.remove('hidden') : content.classList.add('hidden');
+                    });
+                });
+            });
+
+
+            // --- Panel 1: Functional Search and Dynamic Graph ---
+            const visualizeBtn = document.getElementById('visualize-btn');
+            const searchInput = document.getElementById('network-search-input');
+            const vizContainer = document.getElementById('network-visualization');
+            const nodeInspector = document.getElementById('node-inspector');
+            const loadDbBtn = document.getElementById('load-db-btn');
+            const fileInput = document.getElementById('file-input');
+            let currentSimulation = null;
+            
+            loadDbBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (Array.isArray(data) && data.length > 0 && data[0].id && data[0].translation) {
+                                quranData = data;
+                                alert(`${data.length} ayat berhasil dimuat!`);
+                                initializeNetworkGraph(searchInput.value.trim() || 'Allah');
+                            } else {
+                                alert('Format file JSON tidak valid.');
+                            }
+                        } catch (error) {
+                            alert('Gagal mem-parsing file JSON: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            function searchQuran(query) { /* ... same as before ... */ return quranData.filter(ayat => ayat.translation.toLowerCase().includes(query.toLowerCase())); }
+            function buildGraphData(query, searchResults) { /* ... same as before ... */ 
+                const nodes = []; const links = []; const addedWords = new Set();
+                nodes.push({ id: query, type: 'query', label: query, size: 15 });
+                searchResults.forEach(ayat => {
+                    nodes.push({ id: ayat.id, type: 'ayat', label: ayat.source, fullData: ayat, size: 10 });
+                    links.push({ source: query, target: ayat.id, value: 2 });
+                    (ayat.words || []).forEach(wordObj => {
+                        const wordId = `${ayat.id}-${wordObj.text}`;
+                        if (!addedWords.has(wordId) && wordObj.text.length > 1) {
+                            nodes.push({ id: wordId, type: 'word', label: wordObj.text, grammar: wordObj.grammar, size: 5 });
+                            links.push({ source: ayat.id, target: wordId, value: 1 });
+                            addedWords.add(wordId);
+                        }
+                    });
+                });
+                return { nodes, links };
+            }
+
+            function initializeNetworkGraph(query) {
+                if (currentSimulation) { currentSimulation.stop(); }
+                vizContainer.innerHTML = '<p class="text-slate-500 text-center p-8">Mencari dan membangun jaringan...</p>';
+                const searchResults = searchQuran(query);
+                if (searchResults.length === 0 && query) {
+                    vizContainer.innerHTML = `<p class="text-yellow-400 text-center p-8">Topik "${query}" tidak ditemukan.</p>`;
+                    return;
+                }
+                vizContainer.innerHTML = '';
+                const graphData = buildGraphData(query, searchResults);
+                const width = vizContainer.clientWidth; const height = vizContainer.clientHeight;
+                const color = d3.scaleOrdinal().domain(['query', 'ayat', 'Isim', 'Fi\'il', 'Huruf']).range(['#f87171', '#4ade80', '#38bdf8', '#a78bfa', '#facc15']);
+                const svg = d3.select("#network-visualization").append("svg").attr("width", width).attr("height", height).attr("viewBox", [-width / 2, -height / 2, width, height]);
+                const container = svg.append("g");
+                const simulation = d3.forceSimulation(graphData.nodes)
+                    .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(d => d.target.type === 'word' ? 40 : 80).strength(0.8))
+                    .force("charge", d3.forceManyBody().strength(-150)).force("center", d3.forceCenter(0,0));
+                currentSimulation = simulation;
+                const link = container.append("g").attr("stroke", "#999").attr("stroke-opacity", 0.3).selectAll("line").data(graphData.links).join("line").attr("stroke-width", d => Math.sqrt(d.value));
+                const nodeGroup = container.append("g").selectAll("g").data(graphData.nodes).join("g")
+                    .call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended))
+                    .on('click', (event, d) => displayNodeInfo(d));
+                nodeGroup.append("circle").attr("r", d => d.size).attr("fill", d => color(d.type === 'word' ? d.grammar : d.type)).attr("stroke", "#fff").attr("stroke-width", 1.5).attr("stroke-opacity", 0.8);
+                nodeGroup.append("text").text(d => d.label).attr('x', d => d.size + 4).attr('y', 4).attr("fill", "rgba(255, 255, 255, 0.7)").style("font-size", "10px").style("pointer-events", "none");
+                simulation.on("tick", () => {
+                    link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+                    nodeGroup.attr("transform", d => `translate(${d.x},${d.y})`);
+                });
+                function dragstarted(event, d) { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }
+                function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
+                function dragended(event, d) { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }
+                svg.call(d3.zoom().scaleExtent([0.1, 8]).on('zoom', (event) => container.attr('transform', event.transform)));
+            }
+            
+            function displayNodeInfo(nodeData) {
+                let content = `<h4 class="font-semibold text-white mb-2">${nodeData.label}</h4>`;
+                const typeLabel = nodeData.type === 'word' ? `Kata (${nodeData.grammar})` : nodeData.type;
+                content += `<p class="text-xs text-sky-400 uppercase mb-2">${typeLabel}</p>`;
+                if (nodeData.type === 'ayat') {
+                    const fullText = (nodeData.fullData.words || []).map(w => w.text).join(' ');
+                    content += `<p class="text-lg text-right font-serif mb-2" dir="rtl">${fullText}</p>`;
+                    content += `<p class="text-sm text-slate-300 mb-4">"${nodeData.fullData.translation}"</p><hr class="border-slate-700 mb-3">`;
+                    content += `<h5 class="font-semibold text-slate-200 mb-2">Analisis Statistik & Tata Bahasa</h5>`;
+                    const grammarStats = { 'Isim': 0, 'Fi\'il': 0, 'Huruf': 0 };
+                    let totalWords = nodeData.fullData.words ? nodeData.fullData.words.length : 0;
+                    if(totalWords > 0) { nodeData.fullData.words.forEach(w => { if(w.grammar in grammarStats) grammarStats[w.grammar]++; }); }
+                    content += `<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">`;
+                    content += `<span>Total Kata</span><span class="font-mono text-right">${totalWords}</span>`;
+                    content += `<span>- Isim</span><span class="font-mono text-right text-sky-400">${grammarStats['Isim']}</span>`;
+                    content += `<span>- Fi'il</span><span class="font-mono text-right text-purple-400">${grammarStats['Fi\'il']}</span>`;
+                    content += `<span>- Huruf</span><span class="font-mono text-right text-amber-400">${grammarStats['Huruf']}</span>`;
+                    content += `</div>`;
+                }
+                nodeInspector.innerHTML = content;
+                lucide.createIcons();
+            }
+
+            visualizeBtn.addEventListener('click', () => { const query = searchInput.value.trim(); if (query) initializeNetworkGraph(query); });
+            searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') visualizeBtn.click(); });
+            initializeNetworkGraph('Allah');
+        });
+    </script>
+</body>
+</html>
