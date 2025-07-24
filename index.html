@@ -266,7 +266,7 @@
             await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
             await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
             await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
-            console.log('Model Face Recognition berhasil dimuat.');
+            // console.log('Model Face Recognition berhasil dimuat.');
         } catch (error) {
             console.error('Gagal memuat model Face Recognition:', error);
             showError('Gagal memuat fitur pengenalan wajah. Coba refresh halaman.');
@@ -444,12 +444,12 @@
             if (!lastEvent || lastEvent.expression !== currentExpression) {
                 const timestamp = ((Date.now() - analysisStartTime) / 1000).toFixed(1);
                 detectedEvents.push({ expression: currentExpression, timestamp: `${timestamp}s` });
-                console.log(detectedEvents);
+                // console.log(detectedEvents);
             }
 
             const neutralCount = expressionHistory.filter(exp => exp.expression === 'neutral').length;
             if (currentExpression !== 'neutral' && neutralCount > HISTORY_LENGTH * 0.7) {
-                console.log(`MICRO EXPRESSION TERDETEKSI: ${currentExpression}. Membuat laporan...`);
+                // console.log(`MICRO EXPRESSION TERDETEKSI: ${currentExpression}. Membuat laporan...`);
                 generateMicroExpressionReport();
             }
         }
@@ -483,11 +483,11 @@
 
     // Fungsi stopCamera dipindahkan ke lingkup global
     const stopCamera = () => {
-        console.log("stopCamera() function called."); // Log untuk diagnostik
+        // console.log("stopCamera() function called."); // Log untuk diagnostik
         if (currentStream) {
             currentStream.getTracks().forEach(track => {
                 track.stop();
-                console.log("Track stopped:", track.kind); // Log setiap track yang dihentikan
+                // console.log("Track stopped:", track.kind); // Log setiap track yang dihentikan
             });
             currentStream = null; // Penting: Hapus referensi stream
         }
@@ -560,7 +560,7 @@
             const fileContent = await file.text();
             const cleanText = fileContent.trim();
             loadedDatabase = JSON.parse(cleanText);
-            console.log('Database Al-Qur\'an & Hadis berhasil dimuat!', loadedDatabase.length, 'entri.');
+            // console.log('Database Al-Qur\'an & Hadis berhasil dimuat!', loadedDatabase.length, 'entri.');
         } catch (error) {
             console.error('Error loading or parsing database:', error);
             throw new Error('Gagal memuat atau mem-parsing database. Pastikan file adalah JSON yang valid.');
@@ -600,7 +600,7 @@
                     console.error(`API Error Response (Attempt ${i + 1}/${retries}):`, errorBody);
 
                     if ((response.status === 503 || response.status === 429) && i < retries - 1) {
-                        console.log(`Retrying in ${delay / 1000} seconds...`);
+                        // console.log(`Retrying in ${delay / 1000} seconds...`);
                         await new Promise(res => setTimeout(res, delay));
                         delay *= 2;
                         continue;
@@ -628,7 +628,7 @@
                     throw error;
                 }
                 console.error(`Network or unexpected error (Attempt ${i + 1}/${retries}):`, error);
-                console.log(`Retrying in ${delay / 1000} seconds...`);
+                // console.log(`Retrying in ${delay / 1000} seconds...`);
                 await new Promise(res => setTimeout(res, delay));
                 delay *= 2;
             }
@@ -806,7 +806,7 @@
     }
 
     function renderSearchResults(data, status = 'verified') {
-    console.log("DEBUG: Data yang diterima renderSearchResults:", data);
+    // console.log("DEBUG: Data yang diterima renderSearchResults:", data);
 
     // START PERBAIKAN [OBJECT OBJECT] DI SINI
     let displaySummary = data.summary;
@@ -1041,10 +1041,10 @@
                         });
                     }
                     resultData.references = referenceObjects;
-                    console.log("DEBUG: resultData.references AFTER local DB override:", resultData.references); // TAMBAH INI
+                    // console.log("DEBUG: resultData.references AFTER local DB override:", resultData.references); // TAMBAH INI
                     renderSearchResults(resultData, 'verified');
                 } else {
-                    console.log("DEBUG: No relevant documents found from local DB, using generative output.", resultData.references); // Tambah ini juga untuk kejelasan
+                    // console.log("DEBUG: No relevant documents found from local DB, using generative output.", resultData.references); // Tambah ini juga untuk kejelasan
                     renderSearchResults(resultData, 'generative');
                 }
 
@@ -1141,8 +1141,8 @@
 
         allFoundDocs.sort((a, b) => b.score - a.score);
         const uniqueRelevantDocs = allFoundDocs.map(item => item.doc);
-        console.log(`DEBUG: findRelevantDocuments for "${query}" - Found: ${uniqueRelevantDocs.length} docs (before slice)`);
-        console.log("DEBUG: Top 20 relevant documents before slicing:", uniqueRelevantDocs.slice(0, 20)); // Tambahkan baris ini
+        // console.log(`DEBUG: findRelevantDocuments for "${query}" - Found: ${uniqueRelevantDocs.length} docs (before slice)`);
+        // console.log("DEBUG: Top 20 relevant documents before slicing:", uniqueRelevantDocs.slice(0, 20)); // Tambahkan baris ini
 
         return uniqueRelevantDocs.slice(0, limit);
     }
@@ -1385,7 +1385,7 @@
                         loadedDatabase = data;
                         dbStatus.textContent = `Database dari GitHub berhasil dimuat. Total ${loadedDatabase.length} entri.`;
                         dbStatus.className = 'text-center text-xs text-green-400 mt-3';
-                        console.log('Database dari GitHub berhasil dimuat!', loadedDatabase.length, 'entri.');
+                        // console.log('Database dari GitHub berhasil dimuat!', loadedDatabase.length, 'entri.');
                     } catch (error) {
                         dbStatus.textContent = `Gagal memuat dari GitHub: ${error.message}`;
                         dbStatus.className = 'text-center text-xs text-red-400 mt-3';
