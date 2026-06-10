@@ -1049,7 +1049,20 @@
             2.  **Sub-Agent Statistik & Prediksi:** Petakan dampak dunia nyata, risiko, Fat-Tails, atau Black Swan.
             3.  **Kesimpulan Orkestrator (Qalb):** Sintesis dari sudut pandang Maqashid al-Shari'ah.
 
-            Berikan jawaban MURNI dalam format JSON: {"summary": string, "references": [/* MAKSIMAL 4 DALIL DARI KONTEKS YANG DIBERIKAN, format objek sesuai instruksi utama */], "follow_up_questions": [string, string, string]}
+            Berikan jawaban MURNI dalam format JSON: 
+            {
+                "summary": "Jawaban lengkap", 
+                "references": [
+                    {
+                        "type": "Quran/Hadith", 
+                        "reference_text": "QS. Surat:Ayat", 
+                        "text": "Teks Arab jika ada", 
+                        "translation": "Teks terjemahan",
+                        "tafsir": {"source": "Nama Tafsir", "content": "Isi Tafsir"}
+                    }
+                ], 
+                "follow_up_questions": ["Tanya 1", "Tanya 2"]
+            }
             `;
 
             let userContent = query;
