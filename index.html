@@ -589,7 +589,7 @@
     async function callGeminiAPI(payload, retries = 3, delay = 1000) {
         const query = payload.contents?.[0]?.parts?.[0]?.text || payload.query || JSON.stringify(payload);
         // [CLEAN CODE REFACTOR] Terhubung ke Hermes Gateway API (OpenAI format)
-        const apiUrl = 'https://coating-spell-endorsement-consecutive.trycloudflare.com/v1/chat/completions';
+        const apiUrl = 'https://joe-builds-chart-ccd.trycloudflare.com/v1/chat/completions';
         
         const requestBody = {
             model: "default",
