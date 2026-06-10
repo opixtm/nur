@@ -587,53 +587,39 @@
     }
 
     async function callGeminiAPI(payload, retries = 3, delay = 1000) {
-        const apiKey = localStorage.getItem('geminiApiKey');
-        if (!apiKey) throw new Error("API Key Gemini belum disimpan. Silakan masukkan di panel Pengaturan.");
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        // [CLEAN CODE REFACTOR] API Key dan pemanggilan Gemini kini diatur sepenuhnya oleh Backend (Master Agent)
+        const apiUrl = '/api/generate';
 
         for (let i = 0; i < retries; i++) {
             try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const response = await fetch(apiUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
 
                 if (!response.ok) {
-                    const errorBody = await response.text();
-                    console.error(`API Error Response (Attempt ${i + 1}/${retries}):`, errorBody);
+                    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+                    console.error(`Backend API Error Response (Attempt ${i + 1}/${retries}):`, errorData);
 
-                    if ((response.status === 503 || response.status === 429) && i < retries - 1) {
-                        // console.log(`Retrying in ${delay / 1000} seconds...`);
+                    if (i < retries - 1) {
                         await new Promise(res => setTimeout(res, delay));
                         delay *= 2;
                         continue;
                     } else {
-                        throw new Error(`Terjadi masalah saat menghubungi API (Error ${response.status}). Cek API Key Anda atau coba lagi nanti.`);
+                        throw new Error(`Gagal menghubungi Backend Master Agent (Error ${response.status}). Pastikan server Python berjalan.`);
                     }
                 }
 
-                const result = await response.json();
-                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
-                    try {
-                        const rawText = result.candidates[0].content.parts[0].text;
-                        const cleanText = rawText.replace(/^```json\s*|```$/g, '');
-                        return JSON.parse(cleanText);
-                    } catch (e) {
-                        console.error("Gagal mem-parsing JSON dari respons Gemini:", e, "Raw Text:", result.candidates[0].content.parts[0].text);
-                        throw new Error("Gemini memberikan respons yang tidak valid (bukan format JSON).");
-                    }
-                } else {
-                    console.error("Unexpected API response structure:", result);
-                    throw new Error("Struktur respons dari API tidak terduga.");
-                }
+                return await response.json();
+                
             } catch (error) {
-                if (i === retries - 1 || !(error instanceof TypeError) && !(error.message.includes('Failed to fetch'))) {
-                    throw error;
-                }
-                console.error(`Network or unexpected error (Attempt ${i + 1}/${retries}):`, error);
-                // console.log(`Retrying in ${delay / 1000} seconds...`);
+                if (i === retries - 1) throw error;
                 await new Promise(res => setTimeout(res, delay));
                 delay *= 2;
             }
         }
-        throw new Error("Gagal menghubungi API Gemini setelah beberapa kali percobaan. Silakan coba lagi nanti.");
+        throw new Error("Gagal memproses data dari Backend lokal.");
     }
 
     async function exportResultToPDF() {
