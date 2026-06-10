@@ -602,7 +602,10 @@
             try {
                 const response = await fetch(apiUrl, { 
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer hermes_public_key'
+                    }, 
                     body: JSON.stringify(requestBody) 
                 });
 
