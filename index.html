@@ -587,8 +587,8 @@
     }
 
     async function callGeminiAPI(payload, retries = 3, delay = 1000) {
-        // [CLEAN CODE REFACTOR] API Key dan pemanggilan Gemini kini diatur sepenuhnya oleh Backend (Master Agent)
-        const apiUrl = '/api/generate';
+        // [CLEAN CODE REFACTOR] API Key dan pemanggilan Gemini kini diatur sepenuhnya oleh Backend (Master Agent) via Tunnel
+        const apiUrl = 'https://liverpool-licensed-laws-distance.trycloudflare.com/api/chat';
 
         for (let i = 0; i < retries; i++) {
             try {
