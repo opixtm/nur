@@ -845,12 +845,13 @@
             return {
                 id: ref.id || null,
                 type: ref.type || "Unknown",
-                source: ref.source || ref.reference_text || "", // Tambahkan ref.reference_text sebagai fallback untuk Quran
-                text: ref.text || ref.text_arabic || "", // Ini untuk Al-Qur'an (text) atau Hadis (text_arabic)
-                translation: ref.translation || ref.text_translation || "", // Ini untuk Al-Qur'an (translation) atau Hadis (text_translation)
-                grade: ref.grade || "", // Untuk Hadis
-                tafsir: ref.tafsir || null, // Untuk Al-Qur'an
-                asbabun_nuzul: ref.asbabun_nuzul || null // Untuk Al-Qur'an
+                source: ref.source || ref.reference_text || "", 
+                reference_text: ref.reference_text || ref.source || "", 
+                text: ref.text || ref.text_arabic || "", 
+                translation: ref.translation || ref.text_translation || "", 
+                grade: ref.grade || "", 
+                tafsir: ref.tafsir || null, 
+                asbabun_nuzul: ref.asbabun_nuzul || null 
             };
         });
     } else {
