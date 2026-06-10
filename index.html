@@ -577,13 +577,31 @@
     }
 
     async function callGeminiAPI(payload, retries = 3, delay = 1000) {
-        const query = payload.contents?.[0]?.parts?.[0]?.text || payload.query || JSON.stringify(payload);
         // [CLEAN CODE REFACTOR] Terhubung ke Hermes Gateway API (OpenAI format)
         const apiUrl = 'https://joe-builds-chart-ccd.trycloudflare.com/v1/chat/completions';
         
+        let openAiContent = [];
+        const parts = payload.contents?.[0]?.parts;
+        
+        if (parts && parts.length > 0) {
+            for (const part of parts) {
+                if (part.text) {
+                    openAiContent.push({ type: "text", text: part.text });
+                } else if (part.inline_data) {
+                    openAiContent.push({ 
+                        type: "image_url", 
+                        image_url: { url: `data:${part.inline_data.mime_type};base64,${part.inline_data.data}` }
+                    });
+                }
+            }
+        } else {
+            // Fallback for simple string queries
+            openAiContent = payload.query || JSON.stringify(payload);
+        }
+        
         const requestBody = {
             model: "default",
-            messages: [{ role: "user", content: query }],
+            messages: [{ role: "user", content: openAiContent }],
             temperature: 0.1,
             response_format: { type: "json_object" }
         };
@@ -1199,27 +1217,31 @@
                     const expression = Object.keys(detections[0].expressions).reduce((a, b) => detections[0].expressions[a] > detections[0].expressions[b] ? a : b);
                     prompt = `
             ${pilar2PromptInstruction}
-            Anda adalah seorang analis visual yang puitis dan bijaksana, mampu membaca makna mendalam dari sebuah gambar. Juga mampu melakukan kalkulasi kemungkinan interaksi yang memnuculkan sebab akibat dari object yang ada dalam gambar. 
+            Anda adalah Sub-Agent Dekomposisi Visual. Tugas Anda mengamati data piksel absolut dan menghindari atribusi emosi manusia yang halusinatif.
             **Konteks Analisa:**
-            - Sebuah gambar telah diambil.
-            - Hasil deteksi wajah: Ditemukan **${detections.length}** orang.
-            - Ekspresi wajah yang paling dominan adalah: **${expression}**.
+            - Bukti visual empiris telah diberikan.
+            - Deteksi subjek (jika manusia): **${detections.length}** entitas.
+            - Prediksi ekspresi mikro: **${expression}**.
             
-            **Tugas Anda memiliki tiga bagian yang harus dijawab secara berurutan dan lengkap:**
-            **1. Deskripsi Visual Sinematik (Untuk Properti 'description'):** Lukiskan gambar ini dengan kata-kata seolah Anda seorang sinematografer. Jelaskan secara detail tentang komposisi gambar, pencahayaan, palet warna, dan tekstur objek penting. Ciptakan sebuah "rasa" atau "mood" dari visual yang ada.
-            **2. Interpretasi Karakter & Emosi (Untuk Properti 'wisdom' - Paragraf Pertama):** Berdasarkan semua data visual dari Tugas 1, berikan interpretasi tentang kemungkinan keadaan emosional subjek. Gunakan frasa interpretatif seperti "Ekspresi ini memberikan kesan...", "Postur tubuhnya mungkin menyiratkan...". Analisa interaksi antara subjek dengan lingkungannya. UNTUK DEBUGGING: BOLEH menyampaikan kalimat **DIAGNOSIS KLINIS**.
-            **3. Hikmah Kontekstual & Refleksi Diri (Untuk Properti 'wisdom' - Paragraf Kedua):** Hubungkan interpretasi dari Tugas 2 dengan prinsip Islami. Kaitkan dengan tema syukur, sabar, atau muhasabah. Berikan 1-2 pertanyaan reflektif.
-            **FORMAT OUTPUT JSON (WAJIB DIPATUHI):**
-            {"description": "(Hasil dari Tugas 1)", "wisdom": "(Hasil dari Tugas 2 dan 3, gabungkan menjadi satu teks mengalir)", "references": [/* array objek Al-Qur'an/Hadis */], "follow_up_questions": [/* 2-3 pertanyaan reflektif */]}`;
+            **INSTRUKSI EKSEKUSI WAJIB (JSON ONLY):**
+            **1. Deskripsi Objek (description):** Tuliskan fakta visual empiris. Apa saja objek yang ada? Bagaimana pencahayaan riil? Jangan menggunakan bahasa puitis. Jangan menebak perasaan subjek.
+            **2. Dekonstruksi Visual & Spiritual (wisdom):** Jelaskan kondisi riil gambar ini dalam kerangka Sunnatullah. Jika ada manusia, jelaskan interaksi sosialnya dari sudut pandang sosiologi atau fiqh. 
+            **3. Rujukan (references):** Sertakan dalil qat'i (Al-Qur'an/Hadis) yang relevan dengan fenomena visual tersebut.
+            
+            **FORMAT OUTPUT JSON:**
+            {"description": "(Hasil Tugas 1)", "wisdom": "(Hasil Tugas 2)", "references": [/* array objek Al-Qur'an/Hadis */], "follow_up_questions": [/* 2 pertanyaan objektif */]}`;
                 } else {
                     prompt = `
             ${pilar2PromptInstruction}
-            Analisa gambar berikut dan gali hikmahnya secara mendalam. 
-            Tugas Anda:
-            1.  **description**: Deskripsikan gambar secara detail, termasuk objek, suasana, dan pencahayaan.
-            2.  **wisdom**: Berikan pelajaran atau hikmah yang bisa diambil dari keseluruhan gambar dari sudut pandang Islam.
-            3.  **references**: Sertakan rujukan dalil jika relevan.
-            Berikan jawaban dalam format JSON: {"description": string, "wisdom": string, "references": [/* array of Quran/Hadith objects */], "follow_up_questions": [string, string, string]}`;
+            Anda adalah Sub-Agent Dekomposisi Visual. Amati gambar dan berikan analisis objektif.
+            
+            **INSTRUKSI EKSEKUSI WAJIB (JSON ONLY):**
+            1.  **description**: Fakta visual objektif. Sebutkan objek material.
+            2.  **wisdom**: Analisis filosofis dan dekonstruksi berdasarkan Maqashid Syariah.
+            3.  **references**: Sertakan rujukan dalil mutlak.
+            
+            **FORMAT OUTPUT JSON:**
+            {"description": "...", "wisdom": "...", "references": [...], "follow_up_questions": ["..."]}`;
                 }
 
                 const payload = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }], generationConfig: { responseMimeType: "application/json" } };
