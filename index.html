@@ -587,15 +587,23 @@
     }
 
     async function callGeminiAPI(payload, retries = 3, delay = 1000) {
-        // [CLEAN CODE REFACTOR] API Key dan pemanggilan Gemini kini diatur sepenuhnya oleh Backend (Master Agent) via Tunnel
-        const apiUrl = 'https://liverpool-licensed-laws-distance.trycloudflare.com/api/chat';
+        const query = payload.contents?.[0]?.parts?.[0]?.text || payload.query || JSON.stringify(payload);
+        // [CLEAN CODE REFACTOR] Terhubung ke Hermes Gateway API (OpenAI format)
+        const apiUrl = 'https://coating-spell-endorsement-consecutive.trycloudflare.com/v1/chat/completions';
+        
+        const requestBody = {
+            model: "default",
+            messages: [{ role: "user", content: query }],
+            temperature: 0.1,
+            response_format: { type: "json_object" }
+        };
 
         for (let i = 0; i < retries; i++) {
             try {
                 const response = await fetch(apiUrl, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(payload) 
+                    body: JSON.stringify(requestBody) 
                 });
 
                 if (!response.ok) {
@@ -611,7 +619,9 @@
                     }
                 }
 
-                return await response.json();
+                const data = await response.json();
+                // Parse the content string back to JSON object
+                return JSON.parse(data.choices[0].message.content);
                 
             } catch (error) {
                 if (i === retries - 1) throw error;
