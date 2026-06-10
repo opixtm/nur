@@ -580,8 +580,37 @@
         // [CLEAN CODE REFACTOR] Terhubung ke Hermes Gateway API (OpenAI format)
         const apiUrl = 'https://joe-builds-chart-ccd.trycloudflare.com/v1/chat/completions';
         
-        let openAiContent = [];
-        const parts = payload.contents?.[0]?.parts;
+        let messages = [];
+        
+        if (payload.messages) {
+            messages = payload.messages; // Menggunakan mode chat history
+        } else {
+            let openAiContent = [];
+            const parts = payload.contents?.[0]?.parts;
+            
+            if (parts && parts.length > 0) {
+                for (const part of parts) {
+                    if (part.text) {
+                        openAiContent.push({ type: "text", text: part.text });
+                    } else if (part.inline_data) {
+                        openAiContent.push({ 
+                            type: "image_url", 
+                            image_url: { url: `data:${part.inline_data.mime_type};base64,${part.inline_data.data}` }
+                        });
+                    }
+                }
+            } else {
+                openAiContent = payload.query || JSON.stringify(payload);
+            }
+            messages = [{ role: "user", content: openAiContent }];
+        }
+        
+        const requestBody = {
+            model: "default",
+            messages: messages,
+            temperature: 0.1,
+            response_format: { type: "json_object" }
+        };
         
         if (parts && parts.length > 0) {
             for (const part of parts) {
@@ -876,28 +905,30 @@
         statusLabel = 'Analisis Generatif oleh AI (Membutuhkan Verifikasi Ahli & Dalil Utama)';
         statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
     }
-    const resultHTML = `<div class="bg-gray-800/50 p-8 rounded-lg border ${borderColorClass} animate-fade-in">
+    const resultHTML = `<div class="flex justify-start mb-6">
+                            <div class="bg-gray-800/80 p-6 rounded-xl border ${borderColorClass} shadow-lg shadow-black/20 w-full animate-fade-in">
                                 <div class="flex justify-between items-start mb-4">
                                     <div class="flex-grow">
-                                        <h2 class="text-2xl font-bold text-white">Hasil Analisa: <span class="text-emerald-400">${data.query}</span></h2>
-                                        <div class="flex items-center text-sm font-semibold mt-2 text-gray-400">
+                                        <div class="flex items-center text-sm font-semibold mb-3 text-gray-400">
                                             ${statusIcon}
-                                            <span>${statusLabel}</span>
+                                            <span class="uppercase tracking-wider text-xs">${statusLabel}</span>
                                          </div>
                                     </div>
-                                    <button id="export-btn" class="flex-shrink-0 ml-4 px-3 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors flex items-center">
-                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                    <button class="export-btn flex-shrink-0 ml-4 px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded transition-colors flex items-center">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                                         <span>PDF</span>
                                     </button>
                                 </div>
-                                <div id="exportable-content">
-                                    <p class="text-gray-300 mb-6 whitespace-pre-wrap">${displaySummary}</p> 
-                                    <div id="references-wrapper">${referensiHtml}</div>
+                                <div class="exportable-content prose prose-invert max-w-none">
+                                    <p class="text-gray-200 mb-6 whitespace-pre-wrap leading-relaxed">${displaySummary}</p> 
+                                    <div class="references-wrapper">${referensiHtml}</div>
                                 </div>
                                 ${madhhabHtml}
                                 ${followUpHtml}
-                            </div>`;
-    resultsContainer.innerHTML = resultHTML;
+                            </div>
+                        </div>`;
+    resultsContainer.insertAdjacentHTML('beforeend', resultHTML);
+    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
     panelResultsCache['unified-search'] = resultsContainer.innerHTML;
 }
 
@@ -945,12 +976,41 @@
         runQuickAnswerRAG(userInput);
     }
 
+    let researchChatHistory = []; // Global chat history state
+
     async function runQuickAnswerRAG(query) {
         const resultsContainer = document.getElementById('results-container');
         if (!resultsContainer) return;
 
-        showLoading('Mencari ilmu dan rujukan lengkap dari Al-Qur\'an dan Hadis...Mohon menunggu', 'results-container');
-        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        // Render User Bubble
+        const userBubbleHTML = `
+            <div class="flex justify-end mb-6">
+                <div class="bg-emerald-800/60 text-white p-4 rounded-xl rounded-tr-none max-w-[80%] border border-emerald-700">
+                    <p class="whitespace-pre-wrap">${query}</p>
+                </div>
+            </div>
+        `;
+        // Jika ini adalah pesan pertama, kosongkan container. Jika tidak, append.
+        if (researchChatHistory.length === 0) {
+            resultsContainer.innerHTML = userBubbleHTML;
+        } else {
+            resultsContainer.insertAdjacentHTML('beforeend', userBubbleHTML);
+        }
+
+        // Render Loading Bubble
+        const loadingId = 'loading-' + Date.now();
+        const loadingHTML = `
+            <div id="${loadingId}" class="flex justify-start mb-6 animate-pulse">
+                <div class="bg-gray-800/80 p-4 rounded-xl rounded-tl-none border border-gray-700 flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    <span class="text-sm text-gray-400 ml-2">Hermes sedang mendekonstruksi premis...</span>
+                </div>
+            </div>
+        `;
+        resultsContainer.insertAdjacentHTML('beforeend', loadingHTML);
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
         setTimeout(async () => {
             const searchQuran = document.getElementById('filter-quran')?.checked ?? true;
@@ -999,39 +1059,43 @@
         `;
             }
 
-            const prompt = `${pilar2PromptInstruction}
-                ${promptContextSection}
-                **INSTRUKSI JAWABAN:**
-            Sebagai HERMES, berikan analisis teknis dan LENGKAP mengenai topik: "${query}".
-            Fokus pada dekonstruksi logika secara objektif dan mendalam.
+            const instructionPayload = `${pilar2PromptInstruction}
+            
+            **INSTRUKSI JAWABAN (WAJIB DIIKUTI UNTUK SETIAP RESPON):**
+            Sebagai HERMES, berikan analisis teknis dan LENGKAP mengenai input pengguna. Fokus pada dekonstruksi logika secara objektif dan mendalam.
 
             --- STRUKTUR ANALISIS WAJIB ---
             Setiap jawaban WAJIB dipecah ke dalam 3 bagian analisis ini:
+            1.  **Sub-Agent Logika & Filosofi:** Analisis premis pengguna secara brutal dan dekonstruksi batasan masalah.
+            2.  **Sub-Agent Statistik & Prediksi:** Petakan dampak dunia nyata, risiko, Fat-Tails, atau Black Swan.
+            3.  **Kesimpulan Orkestrator (Qalb):** Sintesis dari sudut pandang Maqashid al-Shari'ah.
 
-            1.  **Sub-Agent Logika & Filosofi:**
-                * Analisis premis pengguna secara brutal dan dekonstruksi batasan masalah.
-                * Deteksi apakah ada kecacatan logika (fallacy) atau deviasi dari tauhid.
-                * Evaluasi berdasarkan hukum syariat (fiqh) absolut.
-
-            2.  **Sub-Agent Statistik & Prediksi (Konteks Dunia Nyata):**
-                * Petakan dampak implementasi topik ini di dunia nyata.
-                * Analisis distribusi risiko, *Fat-Tails*, atau skenario ekstrem (*Black Swan*).
-                * Bagaimana batasan makhluk (aproksimasi) bermain dalam skenario ini?
-
-            3.  **Kesimpulan Orkestrator (Qalb):**
-                * Sintesis dari sudut pandang Maqashid al-Shari'ah dan interdependensi sempurna (Sunnatullah).
-                * Sampaikan putusan akhir secara objektif tanpa bermanis kata.
-
-            Struktur jawaban Anda HARUS mengikuti poin-poin analisis ini.
-            
-            PENTING: Rujuk dalil yang relevan dan jika ada rujukan Al-Qur'an, SERTAKAN TAFSIR dan ASBABUN NUZUL yang tervalidasi.
-            
-            Berikan jawaban dalam format JSON: {"query": string, "summary": string, "references": [/* MAKSIMAL 4 DALIL PALING RELEVAN SESUAI FORMAT DI ATAS */], "follow_up_questions": [string, string, string]}
+            Berikan jawaban MURNI dalam format JSON: {"summary": string, "references": [/* MAKSIMAL 4 DALIL DARI KONTEKS YANG DIBERIKAN, format objek sesuai instruksi utama */], "follow_up_questions": [string, string, string]}
             `;
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+
+            let userContent = query;
+            if (contextText) {
+                userContent += `\n\n**KONTEKS RUJUKAN PRIMER DARI DATABASE LOKAL (AL-QUR'AN & HADIS):**\n${contextText}`;
+            }
+
+            // Inisialisasi History jika kosong
+            if (researchChatHistory.length === 0) {
+                researchChatHistory.push({ role: "system", content: instructionPayload });
+            }
+            researchChatHistory.push({ role: "user", content: userContent });
+
+            const payload = { messages: researchChatHistory };
 
             try {
                 const resultData = await callGeminiAPI(payload);
+                
+                // Tambahkan respons AI ke history
+                // (Simpan string JSON mentah sebagai history untuk konteks ke belakang)
+                researchChatHistory.push({ role: "assistant", content: JSON.stringify(resultData) });
+                
+                // Hapus loading
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
 
                 if (referenceObjects.length > 0) {
                     if (resultData.references && Array.isArray(resultData.references)) {
@@ -1048,15 +1112,25 @@
                         });
                     }
                     resultData.references = referenceObjects;
-                    // console.log("DEBUG: resultData.references AFTER local DB override:", resultData.references); // TAMBAH INI
                     renderSearchResults(resultData, 'verified');
                 } else {
-                    // console.log("DEBUG: No relevant documents found from local DB, using generative output.", resultData.references); // Tambah ini juga untuk kejelasan
                     renderSearchResults(resultData, 'generative');
                 }
 
             } catch (error) {
-                showError(error.message, 'results-container');
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                
+                const errorBubble = `
+                    <div class="flex justify-start mb-6">
+                        <div class="bg-red-900/50 text-red-300 p-4 rounded-xl border border-red-700">
+                            <h3 class="font-bold">Error Hermes Qalb</h3><p>${error.message}</p>
+                        </div>
+                    </div>
+                `;
+                resultsContainer.insertAdjacentHTML('beforeend', errorBubble);
+                // Rollback user input if error
+                researchChatHistory.pop();
             }
         }, 0);
     }
