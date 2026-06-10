@@ -1295,113 +1295,22 @@
             const panel = document.getElementById('settings-panel');
             if (!panel) return;
             panel.innerHTML = `
-                    <div class="max-w-xl mx-auto p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
-                        <label for="api-key-input" class="block text-sm font-medium text-gray-300 mb-2">Gemini API Key Anda</label>
-                        <div class="flex items-center space-x-2">
-                            <input id="api-key-input" type="password" placeholder="Masukkan API Key dari Google AI Studio" class="flex-grow px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
-                            <button id="save-api-key-btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-colors">Simpan</button>
+                    <div class="max-w-xl mx-auto p-6 bg-gray-800/50 border border-gray-700 rounded-lg text-center">
+                        <div class="mb-4">
+                            <span class="inline-block p-3 bg-emerald-500/20 text-emerald-400 rounded-full">
+                                <i class="fas fa-server fa-2x"></i>
+                            </span>
                         </div>
-                        <p id="api-key-status" class="text-xs text-gray-500 mt-2"></p>
-                        <p class="text-center text-xs text-gray-500 mt-3">Tidak punya API Key? Dapatkan di <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:underline">Google AI Studio</a>.</p>
-                    </div>
-
-                    <div class="max-w-xl mx-auto p-4 bg-gray-800/50 border border-gray-700 rounded-lg mt-6">
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Muat Database Al-Qur'an & Hadis atau bisa tanpa database AI only !!</label>
-                        <div class="flex items-center space-x-3 mt-2">
-                            <label for="database-file-input" class="w-full text-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-md transition-colors cursor-pointer">
-                                Pilih File Lokal
-                            </label>
-                            <input type="file" id="database-file-input" accept=".json" class="hidden"/>
-                            <button id="load-from-github-btn" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-colors">
-                                GitHub
-                            </button>
+                        <h3 class="text-xl font-bold text-white mb-2">Cloud-Hybrid Architecture Aktif</h3>
+                        <p class="text-gray-300 text-sm mb-4">
+                            API Key dan Vector Database kini dikelola secara otomatis dan aman oleh <strong>Master Agent</strong> di server lokal Anda via Cloudflare Tunnel.
+                        </p>
+                        <div class="inline-flex items-center space-x-2 bg-gray-900 px-4 py-2 rounded border border-gray-600">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-emerald-400 text-sm font-semibold">Terkoneksi ke The Mac Brain</span>
                         </div>
-                        <p id="database-status" class="text-center text-xs text-gray-500 mt-3">Pilih file lokal atau muat langsung dari GitHub.</p>
                     </div>
-                    `;
-            const apiKeyInput = panel.querySelector('#api-key-input');
-            const saveApiKeyBtn = panel.querySelector('#save-api-key-btn');
-            const apiKeyStatus = panel.querySelector('#api-key-status');
-            const saveApiKey = () => {
-                const key = apiKeyInput.value.trim();
-                if (key) {
-                    localStorage.setItem('geminiApiKey', key);
-                    apiKeyStatus.textContent = 'API Key berhasil disimpan!';
-                    apiKeyStatus.className = 'text-xs text-green-400 mt-2 opacity-100 transition-opacity duration-300';
-                } else {
-                    localStorage.removeItem('geminiApiKey');
-                    apiKeyStatus.textContent = 'API Key dihapus dari penyimpanan.';
-                    apiKeyStatus.className = 'text-xs text-yellow-400 mt-2 opacity-100 transition-opacity duration-300';
-                }
-                setTimeout(() => {
-                    if (apiKeyStatus) {
-                        apiKeyStatus.classList.remove('opacity-100');
-                        apiKeyStatus.classList.add('opacity-0');
-                    }
-                }, 3000);
-            };
-            const loadApiKey = () => {
-                const savedKey = localStorage.getItem('geminiApiKey');
-                if (savedKey) {
-                    apiKeyInput.value = savedKey;
-                    apiKeyStatus.textContent = 'API Key berhasil dimuat dari penyimpanan browser.';
-                    apiKeyStatus.className = 'text-xs text-green-400 mt-2';
-                } else {
-                    apiKeyStatus.textContent = 'Silakan masukkan Gemini API Key Anda untuk memulai.';
-                    apiKeyStatus.className = 'text-xs text-yellow-400 mt-2';
-                }
-            };
-            saveApiKeyBtn.addEventListener('click', saveApiKey);
-            loadApiKey();
-            const loadFromGithubBtn = panel.querySelector('#load-from-github-btn');
-            const dbStatus = panel.querySelector('#database-status');
-            if (loadFromGithubBtn) {
-                loadFromGithubBtn.addEventListener('click', async () => {
-                    const githubUrl = 'https://media.githubusercontent.com/media/opixtm/nur/main/database.json';
-                    dbStatus.textContent = 'Mengunduh database dari GitHub, mohon tunggu...';
-                    dbStatus.className = 'text-center text-xs text-yellow-400 mt-3';
-                    try {
-                        const response = await fetch(githubUrl);
-                        if (!response.ok) {
-                            throw new Error(`Gagal mengunduh: Server merespons dengan status ${response.status}`);
-                        }
-                        const rawText = await response.text();
-                        const cleanText = rawText.trim();
-                        const data = JSON.parse(cleanText);
-                        loadedDatabase = data;
-                        dbStatus.textContent = `Database dari GitHub berhasil dimuat. Total ${loadedDatabase.length} entri.`;
-                        dbStatus.className = 'text-center text-xs text-green-400 mt-3';
-                        // console.log('Database dari GitHub berhasil dimuat!', loadedDatabase.length, 'entri.');
-                    } catch (error) {
-                        dbStatus.textContent = `Gagal memuat dari GitHub: ${error.message}`;
-                        dbStatus.className = 'text-center text-xs text-red-400 mt-3';
-                        console.error('Error loading from GitHub:', error);
-                    }
-                });
-            }
-            const databaseFileInput = panel.querySelector('#database-file-input');
-            const databaseStatus = panel.querySelector('#database-status');
-            if (databaseFileInput) {
-                databaseFileInput.addEventListener('change', async (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        databaseStatus.textContent = 'Memuat database, mohon tunggu...';
-                        databaseStatus.className = 'text-xs text-yellow-400 mt-2';
-                        try {
-                            await loadDatabase(file);
-                            databaseStatus.textContent = `Database "${file.name}" berhasil dimuat. Total ${loadedDatabase.length} entri.`;
-                            databaseStatus.className = 'text-xs text-green-400 mt-2';
-                        } catch (error) {
-                            databaseStatus.textContent = `Gagal memuat database: ${error.message}`;
-                            databaseStatus.className = 'text-xs text-red-400 mt-2';
-                            console.error('Error loading database:', error);
-                        }
-                    } else {
-                        databaseStatus.textContent = 'Belum ada database dimuat. Pilih file database.json Anda.';
-                        databaseStatus.className = 'text-xs text-gray-500 mt-2';
-                    }
-                });
-            }
+            `;
         },
     };
 
