@@ -301,6 +301,10 @@ function renderSearchResults(data, status = 'verified') {
                                             ${statusIcon}
                                             <span class="uppercase tracking-wider text-xs">${statusLabel}</span>
                                          </div>
+                                         ${data.used_model ? `<div class="mt-2 flex items-center text-xs text-gray-500 font-mono">
+                                            <span class="mr-3 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>Engine: ${data.used_model}</span>
+                                            <span class="flex items-center ${data.veto_status === 'APPROVE' ? 'text-green-500' : (data.veto_status === 'REJECT' ? 'text-red-500' : 'text-yellow-500')}"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>Veto: ${data.veto_status}</span>
+                                         </div>` : ''}
                                     </div>
                                     <button class="export-btn flex-shrink-0 ml-4 px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded transition-colors flex items-center">
                                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
