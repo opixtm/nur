@@ -629,6 +629,13 @@
                     const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
                     console.error(`Backend API Error Response (Attempt ${i + 1}/${retries}):`, errorData);
 
+                    if (response.status === 429) {
+                        throw new Error('⏳ [ERROR 429: API QUOTA EXHAUSTED] Sistem kehabisan Token (Google Free Tier). Harap bersabar 1-2 menit hingga Quota di-reset otomatis.');
+                    }
+                    if (response.status === 504 || response.status === 502) {
+                        throw new Error('🔌 [ERROR 504/502: GATEWAY TIMEOUT] Koneksi terputus. Hal ini biasanya terjadi karena Gateway menahan koneksi akibat Limit Quota token terkuras. Harap coba lagi dalam 1 menit.');
+                    }
+
                     if (i < retries - 1) {
                         await new Promise(res => setTimeout(res, delay));
                         delay *= 2;
@@ -643,7 +650,12 @@
                 return JSON.parse(data.choices[0].message.content);
                 
             } catch (error) {
-                if (i === retries - 1) throw error;
+                if (i === retries - 1) {
+                    if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('Load failed'))) {
+                        throw new Error('🔌 KONEKSI TERPUTUS: Tailscale memutus koneksi (Timeout). Ini terjadi jika Hermes Gateway sedang terjebak Limit Quota (Error 429) dan tertahan puluhan detik. Harap tunggu 1-2 menit agar Quota pulih.');
+                    }
+                    throw error;
+                }
                 await new Promise(res => setTimeout(res, delay));
                 delay *= 2;
             }
