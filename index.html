@@ -577,8 +577,8 @@
     }
 
     async function callGeminiAPI(payload, retries = 3, delay = 1000) {
-        // [CLEAN CODE REFACTOR] Terhubung ke Hermes Gateway API (OpenAI format)
-        const apiUrl = 'https://joe-builds-chart-ccd.trycloudflare.com/v1/chat/completions';
+        // [CLEAN CODE REFACTOR] Terhubung ke Hermes Gateway API (OpenAI format) via Tailscale Funnel
+        const apiUrl = 'https://taufiks-imac.tailb50867.ts.net/v1/chat/completions';
         
         let messages = [];
         
